@@ -31,7 +31,7 @@
                  collect exp
                  do (setq body rest))
          (macrolet ((goto (tag &optional (amount 1))
-                      `(locally (declare (optimize (safety 0)))
+                      `(locally (declare (optimize (speed 3) (safety 0)))
                          (incf ,',p ,amount)
                          ,@(if (eql amount 0)
                                ()
