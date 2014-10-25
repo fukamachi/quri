@@ -32,13 +32,15 @@
               (uri-malformed-string ()
                 ;; assume this is a relative uri.
                 (return (parse-from-path string 0))))
-          (setq scheme (make-string (- end start)))
-          (do ((p start (1+ p))
-               (i 0 (1+ i)))
-              ((= p end))
-            (setf (aref scheme i)
-                  (char-upcase (aref string p))))
-          (setq scheme (intern scheme :keyword))
+          (setq scheme
+                (cond
+                  ((string-equal string "http"
+                                 :start1 start :end1 end)
+                   :http)
+                  ((string-equal string "https"
+                                 :start1 start :end1 end)
+                   :https)
+                  (T (intern (string-upcase (subseq string start end)) :keyword))))
           (incf end)
           (unless (= end len)
             (multiple-value-bind (string userinfo-start userinfo-end
