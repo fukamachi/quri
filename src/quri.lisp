@@ -3,6 +3,8 @@
   (:use :cl)
   (:import-from :quri.parser
                 :parse-uri)
+  (:import-from :quri.decode
+                :url-decode)
   (:export :parse-uri
            :uri
            :uri-scheme
@@ -11,7 +13,8 @@
            :uri-port
            :uri-path
            :uri-query
-           :uri-fragment))
+           :uri-fragment
+           :url-decode))
 (in-package :quri)
 
 (defstruct uri

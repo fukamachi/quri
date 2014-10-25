@@ -16,11 +16,13 @@
   :version "0.0.1"
   :author "Eitaro Fukamachi"
   :license "BSD 3-Clause"
-  :depends-on (:alexandria)
+  :depends-on (:babel
+               :alexandria)
   :components ((:module "src"
                 :components
                 ((:file "quri" :depends-on ("parser"))
                  (:file "parser" :depends-on ("error" "util"))
+                 (:file "decode" :depends-on ("error"))
                  (:file "util")
                  (:file "error"))))
   :description ""

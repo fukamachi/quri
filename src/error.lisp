@@ -19,6 +19,7 @@
 (define-condition uri-malformed-string (uri-parse-error) ())
 (define-condition uri-invalid-scheme (uri-malformed-string) ())
 (define-condition uri-invalid-port (uri-malformed-string) ())
+(define-condition uri-malformed-urlencoded-string (uri-malformed-string) ())
 
 (define-condition uri-callback-error (uri-error)
   ((name :initarg :name
