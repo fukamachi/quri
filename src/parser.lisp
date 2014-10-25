@@ -113,7 +113,9 @@
 
       (parsing-authority-start
        (setq authority-mark p)
-       (gonext 0))
+       (if (char= char #\[)
+           (goto parsing-ipliteral)
+           (gonext 0)))
 
       ;; parsing host or userinfo
       (parsing-authority
@@ -134,6 +136,11 @@
               (char= char #\#))
           (go :eof))
          (T (redo))))
+
+      (parsing-ipliteral
+       (if (char= char #\])
+           (goto parsing-authority)
+           (redo)))
 
       (:eof
        (if colon-mark
