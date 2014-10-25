@@ -17,15 +17,16 @@
       (flet ((parse-from-path (string start)
                (multiple-value-bind (string start end)
                    (parse-path string :start start)
-                 (setq path (subseq string start end))
-                 (multiple-value-bind (string start end)
+                 (unless (= start end)
+                   (setq path (subseq string start end)))
+                 (multiple-value-bind (parsed-string path-start path-end)
                      (parse-query string :start end :end len)
-                   (when string
-                     (setq query (subseq string start end))
-                     (multiple-value-bind (string start end)
-                         (parse-fragment string :start end :end len)
-                       (when string
-                         (setq fragment (subseq string start end)))))))))
+                   (when parsed-string
+                     (setq query (subseq parsed-string path-start path-end)))
+                   (multiple-value-bind (string start end)
+                       (parse-fragment string :start (or path-end end) :end len)
+                     (when string
+                       (setq fragment (subseq string start end))))))))
         (multiple-value-bind (string start end)
             (handler-case (parse-scheme string)
               (uri-malformed-string ()
@@ -43,7 +44,8 @@
               (parse-authority string :start (1+ end) :end len)
             (when userinfo-start
               (setq userinfo (subseq string userinfo-start userinfo-end)))
-            (setq host (subseq string host-start host-end))
+            (unless (= host-start host-end)
+              (setq host (subseq string host-start host-end)))
             (when port-start
               (handler-case
                   (setq port
