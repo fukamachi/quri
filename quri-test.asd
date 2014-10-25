@@ -15,7 +15,8 @@
                :prove)
   :components ((:module "t"
                 :components
-                ((:test-file "quri"))))
+                ((:test-file "quri")
+                 (:file "benchmark"))))
 
   :defsystem-depends-on (:prove-asdf)
   :perform (test-op :after (op c)
