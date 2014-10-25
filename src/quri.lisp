@@ -17,6 +17,8 @@
            :uri-query
            :uri-fragment
            :ftp-typecode
+           :urn-nid
+           :urn-nss
 
            :url-decode
            :url-encode))
@@ -33,6 +35,7 @@
 
 (defstruct (http (:include uri (scheme :http) (port 80))))
 (defstruct (https (:include uri (scheme :https) (port 443))))
+
 (defstruct (ftp (:include uri (scheme :ftp) (port 21))
                 (:constructor %make-ftp))
   typecode)
@@ -59,6 +62,21 @@
           (values (subseq path 0 (- len #.(1+ (length ";type="))))
                   typecode))))))
 
+(defstruct (urn (:include uri (scheme :urn))
+                (:constructor %make-urn))
+  nid
+  nss)
+
+(defun make-urn (&rest initargs)
+  (let ((urn (apply #'%make-urn initargs)))
+    (when (uri-path urn)
+      (let ((colon-pos (position #\: (uri-path urn))))
+        (if colon-pos
+            (setf (urn-nid urn) (subseq (uri-path urn) 0 colon-pos)
+                  (urn-nss urn) (subseq (uri-path urn) (1+ colon-pos)))
+            (setf (urn-nid urn) (uri-path urn)))))
+    urn))
+
 (defun uri (uri-string)
   (multiple-value-bind (scheme userinfo host port path query fragment)
       (parse-uri uri-string)
@@ -66,6 +84,7 @@
                           ((eq scheme :ftp)   #'make-ftp)
                           ((eq scheme :http)  #'make-http)
                           ((eq scheme :https) #'make-https)
+                          ((eq scheme :urn)   #'make-urn)
                           (T #'make-uri))
                         :scheme scheme
                         :userinfo userinfo
