@@ -39,20 +39,22 @@
             (setf (aref scheme i)
                   (char-upcase (aref string p))))
           (setq scheme (intern scheme :keyword))
-          (multiple-value-bind (string userinfo-start userinfo-end
-                                host-start host-end port-start port-end)
-              (parse-authority string :start (1+ end) :end len)
-            (when userinfo-start
-              (setq userinfo (subseq string userinfo-start userinfo-end)))
-            (unless (= host-start host-end)
-              (setq host (subseq string host-start host-end)))
-            (when port-start
-              (handler-case
-                  (setq port
-                        (parse-integer string :start port-start :end port-end))
-                (error ()
-                  (error 'uri-invalid-port))))
-            (parse-from-path string (or port-end host-end))))))
+          (incf end)
+          (unless (= end len)
+            (multiple-value-bind (string userinfo-start userinfo-end
+                                  host-start host-end port-start port-end)
+                (parse-authority string :start end :end len)
+              (when userinfo-start
+                (setq userinfo (subseq string userinfo-start userinfo-end)))
+              (unless (= host-start host-end)
+                (setq host (subseq string host-start host-end)))
+              (when port-start
+                (handler-case
+                    (setq port
+                          (parse-integer string :start port-start :end port-end))
+                  (error ()
+                    (error 'uri-invalid-port))))
+              (parse-from-path string (or port-end host-end)))))))
     (values scheme userinfo host port path query fragment)))
 
 (defun parse-scheme (string &key (start 0) (end (length string)))

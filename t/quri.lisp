@@ -29,7 +29,11 @@
     ("http://common-lisp.net/#abc" .
      (:http nil "common-lisp.net" "/" nil "abc"))
     ("http://a/b/c/d;p?q#f" .
-     (:http nil "a" "/b/c/d;p" "q" "f"))))
+     (:http nil "a" "/b/c/d;p" "q" "f"))
+    ("http" .
+     (nil nil nil "http" nil nil))
+    ("http:" .
+     (:http nil nil nil nil nil))))
 
 (loop for (test-uri . params) in *test-cases* do
   (let ((uri (uri test-uri)))
