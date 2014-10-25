@@ -23,6 +23,8 @@
            :urn-nid
            :urn-nss
 
+           :render-uri
+
            :url-decode
            :url-encode))
 (in-package :quri)
@@ -101,3 +103,26 @@
              :path path
              :query query
              :fragment fragment)))
+
+(defun render-uri (uri &optional stream)
+  (if (ftp-p uri)
+      (format stream
+              "~:[~;~:*~(~A~):~]~:[~;~:*//~A~]~:[~;~:*~A~]~:[~;~:*;type=~A~]~:[~;~:*?~A~]~:[~;~:*#~A~]"
+              (uri-scheme uri)
+              (uri-authority uri)
+              (uri-path uri)
+              (ftp-typecode uri)
+              (uri-query uri)
+              (uri-fragment uri))
+      (format stream
+              "~:[~;~:*~(~A~):~]~:[~;~:*//~A~]~:[~;~:*~A~]~:[~;~:*?~A~]~:[~;~:*#~A~]"
+              (uri-scheme uri)
+              (uri-authority uri)
+              (uri-path uri)
+              (uri-query uri)
+              (uri-fragment uri))))
+
+(defmethod print-object ((uri uri) stream)
+  (format stream "#<~S ~A>"
+          (type-of uri)
+          (render-uri uri)))
