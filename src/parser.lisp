@@ -101,7 +101,8 @@
          ((char= char #\/)
           (gonext))
          (T
-          (error 'uri-malformed-string))))
+          (return-from parse-authority
+            (values string nil nil start start nil nil)))))
 
       (parsing-authority-starting
        (unless (char= char #\/)
