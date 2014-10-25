@@ -5,6 +5,8 @@
                 :parse-uri)
   (:import-from :quri.decode
                 :url-decode)
+  (:import-from :quri.encode
+                :url-encode)
   (:export :parse-uri
            :uri
            :uri-scheme
@@ -14,7 +16,8 @@
            :uri-path
            :uri-query
            :uri-fragment
-           :url-decode))
+           :url-decode
+           :url-encode))
 (in-package :quri)
 
 (defstruct uri

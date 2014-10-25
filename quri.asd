@@ -20,9 +20,10 @@
                :alexandria)
   :components ((:module "src"
                 :components
-                ((:file "quri" :depends-on ("parser"))
+                ((:file "quri" :depends-on ("parser" "decode" "encode"))
                  (:file "parser" :depends-on ("error" "util"))
                  (:file "decode" :depends-on ("error"))
+                 (:file "encode")
                  (:file "util")
                  (:file "error"))))
   :description ""
