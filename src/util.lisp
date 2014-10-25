@@ -1,5 +1,5 @@
 (in-package :cl-user)
-(defpackage quri.parser
+(defpackage quri.util
   (:use :cl)
   (:import-from :alexandria
                 :with-gensyms)
@@ -7,7 +7,7 @@
            :redo
            :gonext
            :goto))
-(in-package :quri.parser)
+(in-package :quri.util)
 
 (define-condition parsing-end-unexpectedly (simple-error)
   ((state :initarg :state
