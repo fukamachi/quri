@@ -18,6 +18,7 @@
            :uri-path
            :uri-query
            :uri-fragment
+           :uri-authority
            :ftp-typecode
            :urn-nid
            :urn-nss
@@ -34,6 +35,15 @@
   path
   query
   fragment)
+
+(defun uri-authority (uri)
+  (when (uri-host uri)
+    (let ((default-port (scheme-default-port (uri-scheme uri))))
+      (format nil "~:[~;~:*~A@~]~A~:[:~A~;~*~]"
+              (uri-userinfo uri)
+              (uri-host uri)
+              (eql (uri-port uri) default-port)
+              (uri-port uri)))))
 
 (defstruct (ftp (:include uri (scheme :ftp) (port 21))
                 (:constructor %make-ftp))
