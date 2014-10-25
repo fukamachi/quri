@@ -23,13 +23,22 @@
   query
   fragment)
 
+(defstruct (http (:include uri (scheme :http) (port 80))))
+(defstruct (https (:include uri (scheme :https) (port 443))))
+
 (defun uri (uri-string)
   (multiple-value-bind (scheme userinfo host port path query fragment)
       (parse-uri uri-string)
-    (make-uri :scheme scheme
-              :userinfo userinfo
-              :host host
-              :port port
-              :path path
-              :query query
-              :fragment fragment)))
+    (let ((uri (funcall (cond
+                          ((eq scheme :http)  #'make-http)
+                          ((eq scheme :https) #'make-https)
+                          (T #'make-uri))
+                        :scheme scheme
+                        :userinfo userinfo
+                        :host host
+                        :path path
+                        :query query
+                        :fragment fragment)))
+      (when port
+        (setf (uri-port uri) port))
+      uri)))

@@ -31,7 +31,13 @@
               (uri-malformed-string ()
                 ;; assume this is a relative uri.
                 (return (parse-from-path string 0))))
-          (setq scheme (subseq string start end))
+          (setq scheme (make-string (- end start)))
+          (do ((p start (1+ p))
+               (i 0 (1+ i)))
+              ((= p end))
+            (setf (aref scheme i)
+                  (char-upcase (aref string p))))
+          (setq scheme (intern scheme :keyword))
           (multiple-value-bind (string userinfo-start userinfo-end
                                 host-start host-end port-start port-end)
               (parse-authority string :start (1+ end) :end len)
