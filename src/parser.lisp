@@ -4,13 +4,14 @@
         :quri.error
         :quri.util)
   (:import-from :alexandria
-                :with-gensyms)
+                :with-gensyms
+                :when-let)
   (:export :parse-uri))
 (in-package :quri.parser)
 
 (defun parse-uri (string)
   (check-type string string)
-  (let (scheme userinfo host path query fragment
+  (let (scheme userinfo host port path query fragment
         (len (length string)))
     (block nil
       (flet ((parse-from-path (string start)
@@ -31,14 +32,20 @@
                 ;; assume this is a relative uri.
                 (return (parse-from-path string 0))))
           (setq scheme (subseq string start end))
-          (multiple-value-bind (string user-start user-end pass-start pass-end
+          (multiple-value-bind (string userinfo-start userinfo-end
                                 host-start host-end port-start port-end)
               (parse-authority string :start (1+ end) :end len)
-            (when user-start
-              (setq userinfo (subseq string user-start (or pass-end user-end))))
-            (setq host (subseq string host-start (or port-end host-end)))
+            (when userinfo-start
+              (setq userinfo (subseq string userinfo-start userinfo-end)))
+            (setq host (subseq string host-start host-end))
+            (when port-start
+              (handler-case
+                  (setq port
+                        (parse-integer string :start port-start :end port-end))
+                (error ()
+                  (error 'uri-invalid-port))))
             (parse-from-path string (or port-end host-end))))))
-    (values scheme userinfo host path query fragment)))
+    (values scheme userinfo host port path query fragment)))
 
 (defun parse-scheme (string &key (start 0) (end (length string)))
   (declare (type string string)
@@ -73,10 +80,8 @@
            #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note))
   (let ((authority-mark nil)
         (colon-mark nil)
-        username-start
-        username-end
-        password-start
-        password-end
+        userinfo-start
+        userinfo-end
         host-start
         host-end
         port-start
@@ -106,15 +111,10 @@
           (setq colon-mark p)
           (redo))
          ((char= char #\@)
-          (when username-start
+          (when userinfo-start
             (error 'uri-malformed-string))
-          (if colon-mark
-              (setq username-start authority-mark
-                    username-end colon-mark
-                    password-start (1+ colon-mark)
-                    password-end p)
-              (setq username-start authority-mark
-                    username-end p))
+          (setq userinfo-start authority-mark
+                userinfo-end p)
           (setq authority-mark (1+ p)
                 colon-mark nil)
           (redo))
@@ -134,8 +134,7 @@
                  host-end p))
        (return-from parse-authority
          (values string
-                 username-start username-end
-                 password-start password-end
+                 userinfo-start userinfo-end
                  host-start host-end
                  port-start port-end))))))
 

@@ -7,6 +7,7 @@
 
            :uri-malformed-string
            :uri-invalid-scheme
+           :uri-invalid-port
 
            :uri-callback-error))
 (in-package :quri.error)
@@ -17,10 +18,14 @@
 
 (define-condition uri-malformed-string (uri-parse-error) ())
 (define-condition uri-invalid-scheme (uri-malformed-string) ())
+(define-condition uri-invalid-port (uri-malformed-string) ())
 
 (define-condition uri-callback-error (uri-error)
   ((name :initarg :name
-         :initform (error ":name is required")))
+         :initform (error ":name is required"))
+   (error :initarg :error
+          :initform (error ":error is required")))
   (:report (lambda (condition stream)
-             (format stream "Error while executing a callback: ~S"
-                     (slot-value condition 'name)))))
+             (format stream "Error while executing a callback: ~S~%    ~A"
+                     (slot-value condition 'name)
+                     (slot-value condition 'error)))))
