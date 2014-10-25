@@ -10,7 +10,9 @@
   (:import-from :quri.port
                 :scheme-default-port)
   (:export :parse-uri
+
            :uri
+           :uri-p
            :uri-scheme
            :uri-userinfo
            :uri-host
@@ -19,7 +21,10 @@
            :uri-query
            :uri-fragment
            :uri-authority
+
            :ftp-typecode
+
+           :urn-p
            :urn-nid
            :urn-nss
 
