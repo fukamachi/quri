@@ -35,7 +35,7 @@
 
            :uri-ftp
            :uri-ftp-p
-           :uri-typecode
+           :uri-ftp-typecode
 
            :uri-http
            :uri-http-p

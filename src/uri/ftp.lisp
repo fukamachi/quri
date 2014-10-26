@@ -8,13 +8,12 @@
                 :uri-path)
   (:export :uri-ftp
            :uri-ftp-p
-           :uri-typecode
+           :uri-ftp-typecode
            :make-uri-ftp))
 (in-package :quri.uri.ftp)
 
 (defstruct (uri-ftp (:include uri (scheme :ftp) (port 21))
-                    (:constructor %make-uri-ftp)
-                    (:conc-name :uri-))
+                    (:constructor %make-uri-ftp))
   typecode)
 
 (defun make-uri-ftp (&rest initargs)
