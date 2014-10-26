@@ -16,16 +16,10 @@
            :make-uri-http
            :uri-http-p
 
-           :uri-https
-           :make-uri-https
-           :uri-https-p
-
            :uri-query-form))
 (in-package :quri.uri.http)
 
 (defstruct (uri-http (:include uri (scheme :http) (port 80))))
-
-(defstruct (uri-https (:include uri-http (scheme :http) (port 443))))
 
 (defun uri-query-form (http)
   (when-let (query (uri-query http))

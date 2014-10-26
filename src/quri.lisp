@@ -39,8 +39,6 @@
 
            :uri-http
            :uri-http-p
-           :uri-https
-           :uri-https-p
            :uri-query-form
 
            :uri-ldap
@@ -63,13 +61,13 @@
   (multiple-value-bind (scheme userinfo host port path query fragment)
       (parse-uri uri-string)
     (funcall (cond
-               ((eq scheme :http)  #'make-uri-http)
-               ((eq scheme :https) #'make-uri-https)
+               ((or (eq scheme :http)
+                    (eq scheme :https)) #'make-uri-http)
                ((or (eq scheme :ldap)
                     (eq scheme :ldaps)) #'make-uri-ldap)
-               ((eq scheme :ftp)   #'make-uri-ftp)
-               ((eq scheme :urn)   #'make-urn)
-               (T #'make-uri))
+               ((eq scheme :ftp)        #'make-uri-ftp)
+               ((eq scheme :urn)        #'make-urn)
+               (T                       #'make-uri))
              :port (or port
                        (scheme-default-port scheme))
              :scheme scheme
