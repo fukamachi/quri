@@ -51,6 +51,9 @@
          (cond
            ((char= char #\%)
             (gonext))
+           ((char= char #\+)
+            (write-to-buffer #.(char-code #\Space))
+            (redo))
            (T
             (write-to-buffer (char-code char))
             (redo))))
