@@ -11,7 +11,7 @@
                 :collecting
                 :collect)
   (:export :url-decode
-           :url-decode-form))
+           :url-decode-params))
 (in-package :quri.decode)
 
 (declaim (ftype (function (character) (unsigned-byte 4)) hexdigit-to-integer))
@@ -67,11 +67,11 @@
          (goto parsing))))
     (babel:octets-to-string buffer :end i :encoding encoding)))
 
-(defun url-decode-form (string &key
-                                 (delimiter #\&)
-                                 (encoding babel-encodings:*default-character-encoding*)
-                                 (start 0)
-                                 end)
+(defun url-decode-params (string &key
+                                   (delimiter #\&)
+                                   (encoding babel-encodings:*default-character-encoding*)
+                                   (start 0)
+                                   end)
   (declare (optimize (speed 3)))
   (check-type string string)
   (check-type delimiter character)

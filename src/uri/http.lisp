@@ -7,9 +7,9 @@
                 :port
                 :uri-query)
   (:import-from :quri.encode
-                :url-encode-form)
+                :url-encode-params)
   (:import-from :quri.decode
-                :url-decode-form)
+                :url-decode-params)
   (:import-from :alexandria
                 :when-let)
   (:export :uri-http
@@ -23,7 +23,7 @@
 
 (defun uri-query-form (http)
   (when-let (query (uri-query http))
-    (url-decode-form query)))
+    (url-decode-params query)))
 
 (defun (setf uri-query-form) (new http)
-  (setf (uri-query http) (url-encode-form new)))
+  (setf (uri-query http) (url-encode-params new)))

@@ -4,7 +4,7 @@
   (:import-from :babel-encodings
                 :*default-character-encoding*)
   (:export :url-encode
-           :url-encode-form))
+           :url-encode-params))
 (in-package :quri.encode)
 
 (declaim (type (simple-array character (16)) +hexdigit-char+))
@@ -77,12 +77,12 @@
     (setf (fill-pointer res) i)
     res))
 
-(defun url-encode-form (form-alist &key (encoding babel-encodings:*default-character-encoding*)
-                                     space-to-plus)
+(defun url-encode-params (params-alist &key (encoding babel-encodings:*default-character-encoding*)
+                                         space-to-plus)
   (declare (optimize (speed 3)))
-  (check-type form-alist list)
+  (check-type params-alist list)
   (with-output-to-string (s)
-    (loop for ((field . value) . rest) on form-alist do
+    (loop for ((field . value) . rest) on params-alist do
       (write-string (url-encode field :encoding encoding :space-to-plus space-to-plus) s)
       (when value
         (write-char #\= s)

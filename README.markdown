@@ -103,17 +103,17 @@ Structure class for LDAP/LDAPS URIs.
 
 Decode a Percent-Encoded string.
 
-### \[Function] `url-decode-form`
+### \[Function] `url-decode-params`
 
-Decode an `x-www-form-urlencoded` string and return an association list.
+Decode a [form-urlencoded](http://tools.ietf.org/html/rfc1866#section-8.2.1) string and return an association list.
 
 ### \[Function] `url-encode`
 
 Encode a string into a Percent-Encoded string.
 
-### \[Function] `url-encode-form`
+### \[Function] `url-encode-params`
 
-Encode an association list into a Percent-Encoded string.
+Encode an association list into a [form-urlencoded](http://tools.ietf.org/html/rfc1866#section-8.2.1) string.
 
 ## Installation
 

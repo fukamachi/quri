@@ -9,10 +9,10 @@
                 :parse-uri)
   (:import-from :quri.decode
                 :url-decode
-                :url-decode-form)
+                :url-decode-params)
   (:import-from :quri.encode
                 :url-encode
-                :url-encode-form)
+                :url-encode-params)
   (:import-from :quri.port
                 :scheme-default-port)
   (:export :parse-uri
@@ -39,7 +39,7 @@
 
            :uri-http
            :uri-http-p
-           :uri-query-form
+           :uri-query-params
 
            :uri-ldap
            :uri-ldap-p
@@ -52,9 +52,9 @@
            :render-uri
 
            :url-decode
-           :url-decode-form
+           :url-decode-params
            :url-encode
-           :url-encode-form))
+           :url-encode-params))
 (in-package :quri)
 
 (defun uri (uri-string)
