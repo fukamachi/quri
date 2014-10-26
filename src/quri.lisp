@@ -6,9 +6,11 @@
   (:import-from :quri.parser
                 :parse-uri)
   (:import-from :quri.decode
-                :url-decode)
+                :url-decode
+                :url-decode-form)
   (:import-from :quri.encode
-                :url-encode)
+                :url-encode
+                :url-encode-form)
   (:import-from :quri.port
                 :scheme-default-port)
   (:export :parse-uri
@@ -36,7 +38,9 @@
            :render-uri
 
            :url-decode
-           :url-encode))
+           :url-decode-form
+           :url-encode
+           :url-encode-form))
 (in-package :quri)
 
 (defun uri (uri-string)

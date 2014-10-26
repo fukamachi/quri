@@ -7,7 +7,11 @@
                 :octets-to-string)
   (:import-from :babel-encodings
                 :*default-character-encoding*)
-  (:export :url-decode))
+  (:import-from :cl-utilities
+                :collecting
+                :collect)
+  (:export :url-decode
+           :url-decode-form))
 (in-package :quri.decode)
 
 (declaim (ftype (function (character) (unsigned-byte 4)) hexdigit-to-integer))
@@ -62,3 +66,56 @@
              (hexdigit-to-integer char)))
          (goto parsing))))
     (babel:octets-to-string buffer :end i :encoding encoding)))
+
+(defun url-decode-form (string &key
+                                 (delimiter #\&)
+                                 (encoding babel-encodings:*default-character-encoding*)
+                                 (start 0)
+                                 end)
+  (declare (optimize (speed 3)))
+  (check-type string string)
+  (check-type delimiter character)
+  (let ((end (or end (length string)))
+        (start-mark nil)
+        (=-mark nil))
+    (collecting
+      (flet ((collect-pair (p)
+               (collect (cons (url-decode string :encoding encoding :start start-mark :end =-mark)
+                              (url-decode string :encoding encoding :start (1+ =-mark) :end p)))
+               (setq start-mark nil
+                     =-mark nil))
+             (collect-field (p)
+               (collect (cons (url-decode string :encoding encoding :start start-mark :end p) nil))
+               (setq start-mark nil)))
+        (with-array-parsing (char p string start end)
+          (start
+           (when (or (char= char #\=)
+                     (char= char delimiter))
+             (error 'uri-malformed-urlencoded-string))
+           (setq start-mark p)
+           (gonext))
+
+          (parsing-field
+           (cond
+             ((char= char #\=)
+              (setq =-mark p)
+              (gonext))
+             ((char= char delimiter)
+              ;; field only
+              (collect-field p)
+              (goto start)))
+           (redo))
+
+          (parsing-value
+           (cond
+             ((char= char #\=)
+              (error 'uri-malformed-urlencoded-string))
+             ((char= char delimiter)
+              (collect-pair p)
+              (goto start)))
+           (redo))
+
+          (:eof
+           (if =-mark
+               (collect-pair p)
+               (collect-field p))))))))

@@ -1,10 +1,10 @@
 (in-package :cl-user)
 (defpackage quri.encode
-  (:use :cl
-        :quri.util)
+  (:use :cl)
   (:import-from :babel-encodings
                 :*default-character-encoding*)
-  (:export :url-encode))
+  (:export :url-encode
+           :url-encode-form))
 (in-package :quri.encode)
 
 (declaim (type (simple-array character (16)) +hexdigit-char+))
@@ -71,3 +71,15 @@
          (incf i 2))))
     (setf (fill-pointer res) i)
     res))
+
+(defun url-encode-form (form-alist &key (encoding babel-encodings:*default-character-encoding*))
+  (declare (optimize (speed 3)))
+  (check-type form-alist list)
+  (with-output-to-string (s)
+    (loop for ((field . value) . rest) on form-alist do
+      (write-string (url-encode field :encoding encoding) s)
+      (when value
+        (write-char #\= s)
+        (write-string (url-encode value :encoding encoding) s))
+      (when rest
+        (write-char #\& s)))))

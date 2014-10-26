@@ -17,7 +17,8 @@
   :author "Eitaro Fukamachi"
   :license "BSD 3-Clause"
   :depends-on (:babel
-               :alexandria)
+               :alexandria
+               :cl-utilities)
   :components ((:module "src"
                 :components
                 ((:file "quri" :depends-on ("uri" "uri-classes" "parser" "decode" "encode" "port"))
@@ -28,7 +29,7 @@
                   :components
                   ((:file "ftp")))
                  (:file "parser" :depends-on ("error" "util"))
-                 (:file "decode" :depends-on ("error"))
+                 (:file "decode" :depends-on ("error" "util"))
                  (:file "encode")
                  (:file "port")
                  (:file "util")
