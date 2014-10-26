@@ -20,7 +20,13 @@
                :alexandria)
   :components ((:module "src"
                 :components
-                ((:file "quri" :depends-on ("parser" "decode" "encode" "port"))
+                ((:file "quri" :depends-on ("uri" "uri-classes" "parser" "decode" "encode" "port"))
+                 (:file "uri" :depends-on ("port"))
+                 (:module "uri-classes"
+                  :pathname "uri"
+                  :depends-on ("uri")
+                  :components
+                  ((:file "ftp")))
                  (:file "parser" :depends-on ("error" "util"))
                  (:file "decode" :depends-on ("error"))
                  (:file "encode")
