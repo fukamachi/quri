@@ -2,7 +2,8 @@
 (defpackage quri
   (:use :cl
         :quri.uri
-        :quri.uri.ftp)
+        :quri.uri.ftp
+        :quri.uri.http)
   (:import-from :quri.parser
                 :parse-uri)
   (:import-from :quri.decode
@@ -35,6 +36,12 @@
            :uri-ftp-p
            :uri-typecode
 
+           :uri-http
+           :uri-http-p
+           :uri-https
+           :uri-https-p
+           :uri-query-form
+
            :render-uri
 
            :url-decode
@@ -47,6 +54,8 @@
   (multiple-value-bind (scheme userinfo host port path query fragment)
       (parse-uri uri-string)
     (funcall (cond
+               ((eq scheme :http)  #'make-uri-http)
+               ((eq scheme :https) #'make-uri-https)
                ((eq scheme :ftp)   #'make-uri-ftp)
                ((eq scheme :urn)   #'make-urn)
                (T #'make-uri))

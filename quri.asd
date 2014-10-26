@@ -25,9 +25,10 @@
                  (:file "uri" :depends-on ("port"))
                  (:module "uri-classes"
                   :pathname "uri"
-                  :depends-on ("uri")
+                  :depends-on ("uri" "encode" "decode")
                   :components
-                  ((:file "ftp")))
+                  ((:file "ftp")
+                   (:file "http")))
                  (:file "parser" :depends-on ("error" "util"))
                  (:file "decode" :depends-on ("error" "util"))
                  (:file "encode")
