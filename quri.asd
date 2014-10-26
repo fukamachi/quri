@@ -37,7 +37,7 @@
                  (:file "port")
                  (:file "util")
                  (:file "error"))))
-  :description ""
+  :description "Yet another URI library for Common Lisp"
   :long-description
   #.(with-open-file (stream (merge-pathnames
                              #p"README.markdown"

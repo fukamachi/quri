@@ -42,6 +42,79 @@
 ;=> "/fooあ"
 ```
 
+## Functions
+
+### \[Function] `uri`
+
+Parse a string and return a `uri` object.
+
+### \[Structure] `uri`
+
+Structure class as a representation of URIs.
+
+#### Methods
+
+- `uri-scheme`
+- `uri-userinfo`
+- `uri-host`
+- `uri-port`
+- `uri-path`
+- `uri-authority`
+- `render-uri`
+
+### \[Structure] `urn` (extends `uri`)
+
+Structure class as a representation of URNs. All methods of `uri` are also available for this class.
+
+#### Methods
+
+- `urn-nid`
+- `urn-nss`
+
+### \[Structure] `uri-http` (extends `uri`)
+
+Structure class for HTTP/HTTPS URIs.
+
+#### Methods
+
+- `uri-query-form`
+
+### \[Structure] `uri-ftp` (extends `uri`)
+
+Structure class for FTP URIs.
+
+#### Methods
+
+- `uri-ftp-typecode`
+
+### \[Structure] `uri-ldap` (extends `uri`)
+
+Structure class for LDAP/LDAPS URIs.
+
+#### Methods
+
+- `uri-ldap-dn`
+- `uri-ldap-attributes`
+- `uri-ldap-scope`
+- `uri-ldap-filter`
+- `uri-ldap-extensions`
+
+### \[Function] `url-decode`
+
+Decode a Percent-Encoded string.
+
+### \[Function] `url-decode-form`
+
+Decode an `x-www-form-urlencoded` string and return an association list.
+
+### \[Function] `url-encode`
+
+Encode a string into a Percent-Encoded string.
+
+### \[Function] `url-encode-form`
+
+Encode an association list into a Percent-Encoded string.
+
 ## Installation
 
 ```
