@@ -18,6 +18,7 @@
   :license "BSD 3-Clause"
   :depends-on (:babel
                :alexandria
+               :split-sequence
                :cl-utilities)
   :components ((:module "src"
                 :components
@@ -28,7 +29,8 @@
                   :depends-on ("uri" "encode" "decode")
                   :components
                   ((:file "ftp")
-                   (:file "http")))
+                   (:file "http")
+                   (:file "ldap")))
                  (:file "parser" :depends-on ("error" "util"))
                  (:file "decode" :depends-on ("error" "util"))
                  (:file "encode")

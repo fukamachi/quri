@@ -13,7 +13,8 @@
      :telnet 23
      :http 80
      :ldap 389
-     :https 443)
+     :https 443
+     :ldaps 636)
    :test 'eq))
 
 (defun scheme-default-port (scheme)

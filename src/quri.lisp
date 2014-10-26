@@ -3,7 +3,8 @@
   (:use :cl
         :quri.uri
         :quri.uri.ftp
-        :quri.uri.http)
+        :quri.uri.http
+        :quri.uri.ldap)
   (:import-from :quri.parser
                 :parse-uri)
   (:import-from :quri.decode
@@ -42,6 +43,14 @@
            :uri-https-p
            :uri-query-form
 
+           :uri-ldap
+           :uri-ldap-p
+           :uri-ldap-dn
+           :uri-ldap-attributes
+           :uri-ldap-scope
+           :uri-ldap-filter
+           :uri-ldap-extensions
+
            :render-uri
 
            :url-decode
@@ -56,6 +65,8 @@
     (funcall (cond
                ((eq scheme :http)  #'make-uri-http)
                ((eq scheme :https) #'make-uri-https)
+               ((or (eq scheme :ldap)
+                    (eq scheme :ldaps)) #'make-uri-ldap)
                ((eq scheme :ftp)   #'make-uri-ftp)
                ((eq scheme :urn)   #'make-urn)
                (T #'make-uri))
