@@ -33,13 +33,14 @@
          (lambda (char)
            (setf (aref ary (char-code char))
                  (integer-to-hexdigit (char-code char))))
-         "!*'();:@&=+$,/?#[]")
+         "!*'();:@&=+$,/?#[] ")
     ary))
 
 (defun url-encode (string &key
                             (encoding babel-encodings:*default-character-encoding*)
                             (start 0)
-                            end)
+                            end
+                            space-to-plus)
   (declare (optimize (speed 3)))
   (check-type string string)
   (let* ((octets (babel:string-to-octets string :encoding encoding :start start :end end))
@@ -50,7 +51,11 @@
              (type integer i))
     (loop for byte of-type (unsigned-byte 8) across octets do
       (cond
-        ((< byte 97)
+        ((and space-to-plus
+              (= byte #.(char-code #\Space)))
+         (setf (aref res i) #\+)
+         (incf i))
+        ((< byte #.(char-code #\a))
          (let ((reserved (aref +reserved+ byte)))
            (if (zerop (length reserved))
                (progn
@@ -72,14 +77,15 @@
     (setf (fill-pointer res) i)
     res))
 
-(defun url-encode-form (form-alist &key (encoding babel-encodings:*default-character-encoding*))
+(defun url-encode-form (form-alist &key (encoding babel-encodings:*default-character-encoding*)
+                                     space-to-plus)
   (declare (optimize (speed 3)))
   (check-type form-alist list)
   (with-output-to-string (s)
     (loop for ((field . value) . rest) on form-alist do
-      (write-string (url-encode field :encoding encoding) s)
+      (write-string (url-encode field :encoding encoding :space-to-plus space-to-plus) s)
       (when value
         (write-char #\= s)
-        (write-string (url-encode value :encoding encoding) s))
+        (write-string (url-encode value :encoding encoding :space-to-plus space-to-plus) s))
       (when rest
         (write-char #\& s)))))
