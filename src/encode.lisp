@@ -42,20 +42,32 @@
                             end)
   (declare (optimize (speed 3)))
   (check-type string string)
-  (let ((octets (babel:string-to-octets string :encoding encoding :start start :end end)))
-    (declare (type (simple-array (unsigned-byte 8) (*)) octets))
-    (with-output-to-string (s)
-      (loop for byte of-type (unsigned-byte 8) across octets do
-        (cond
-          ((< byte 97)
-           (let ((reserved (aref +reserved+ byte)))
-             (if (zerop (length reserved))
-                 (write-char (code-char byte) s)
-                 (progn
-                   (write-char #\% s)
-                   (write-sequence reserved s)))))
-          ((< byte 128)
-           (write-char (code-char byte) s))
-          (T
-           (write-char #\% s)
-           (write-sequence (integer-to-hexdigit byte) s)))))))
+  (let* ((octets (babel:string-to-octets string :encoding encoding :start start :end end))
+         (res (make-array (* (length octets) 3) :element-type 'character :fill-pointer t))
+         (i 0))
+    (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+             (type string res)
+             (type integer i))
+    (loop for byte of-type (unsigned-byte 8) across octets do
+      (cond
+        ((< byte 97)
+         (let ((reserved (aref +reserved+ byte)))
+           (if (zerop (length reserved))
+               (progn
+                 (setf (aref res i) (code-char byte))
+                 (incf i))
+               (progn
+                 (setf (aref res i) #\%)
+                 (incf i)
+                 (replace res reserved :start1 i)
+                 (incf i 2)))))
+        ((< byte 128)
+         (setf (aref res i) (code-char byte))
+         (incf i))
+        (T
+         (setf (aref res i) #\%)
+         (incf i)
+         (replace res (integer-to-hexdigit byte) :start1 i)
+         (incf i 2))))
+    (setf (fill-pointer res) i)
+    res))
