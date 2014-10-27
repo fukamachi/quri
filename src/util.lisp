@@ -3,11 +3,26 @@
   (:use :cl)
   (:import-from :alexandria
                 :with-gensyms)
-  (:export :with-array-parsing
+  (:export :standard-alpha-char-p
+           :standard-alphanumeric-p
+           :with-array-parsing
            :redo
            :gonext
            :goto))
 (in-package :quri.util)
+
+(defun standard-alpha-char-p (char)
+  (declare (type character char)
+           (optimize (speed 3) (safety 2)))
+  (let ((code (char-code char)))
+    (or (<= (char-code #\A) code (char-code #\Z))
+        (<= (char-code #\a) code (char-code #\z)))))
+
+(defun standard-alphanumeric-p (char)
+  (declare (type character char)
+           (optimize (speed 3) (safety 2)))
+  (or (digit-char-p char)
+      (standard-alpha-char-p char)))
 
 (define-condition parsing-end-unexpectedly (simple-error)
   ((state :initarg :state

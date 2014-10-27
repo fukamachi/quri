@@ -73,7 +73,7 @@
 (defun scheme-char-p (char)
   (declare (type character char)
            (optimize (speed 3) (safety 0)))
-  (or (alphanumericp char)
+  (or (standard-alphanumeric-p char)
       (char= char #\+)
       (char= char #\-)
       (char= char #\.)))
@@ -86,7 +86,7 @@
   (with-array-parsing (char p string start end)
     (declare (type integer p))
     (parsing-scheme-start
-     (unless (alpha-char-p char)
+     (unless (standard-alpha-char-p char)
        (error 'uri-invalid-scheme))
      (gonext))
 
