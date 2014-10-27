@@ -10,85 +10,150 @@
 
 (deftype simple-byte-vector () '(simple-array (unsigned-byte 8) (*)))
 
-(defun convert-to-scheme-keyword (data start end)
-  (etypecase data
-    (string
-     (cond ((string-equal data "http"
-                          :start1 start :end1 end)
-            :http)
-           ((string-equal data "https"
-                          :start1 start :end1 end)
-            :https)
-           (T (intern (string-upcase (subseq data start end)) :keyword))))
-    (simple-byte-vector
-     (let ((data-str (make-string (- end start))))
-       (do ((i start (1+ i))
-            (j 0 (1+ j)))
-           ((= i end))
-         (let ((code (aref data i)))
-           (setf (aref data-str j)
-                 (code-char
-                  (if (<= #.(char-code #\a) code #.(char-code #\z))
-                      (- code 32)
-                      code)))))
-       (cond ((string-equal data-str "http")
-              :http)
-             ((string-equal data-str "https")
-              :https)
-             (T (intern data-str :keyword)))))))
-
 (defun parse-uri (data &key (start 0) end)
-  (declare (optimize (speed 3) (safety 2)))
+  (etypecase data
+    (string (parse-uri-string data :start start :end end))
+    (simple-byte-vector (parse-uri-byte-vector data :start start :end end))))
+
+(defun parse-uri-string (data &key (start 0) end)
+  (declare (type string data)
+           (optimize (speed 3) (safety 2)))
   (let (scheme userinfo host port path query fragment
-        (subseq-fn (etypecase data
-                     (string #'subseq)
-                     (simple-byte-vector (lambda (data &optional start end)
-                                           (babel:octets-to-string data :start start :end end)))))
         (parse-start start)
         (parse-end (or end (length data))))
     (declare (type integer parse-start parse-end))
-    (flet ((subseq* (&rest args)
-             (apply subseq-fn args)))
+    (block nil
+      (flet ((parse-from-path (data start)
+               (declare (type string data)
+                        (type integer start))
+               (multiple-value-bind (data start end)
+                   (parse-path-string data :start start)
+                 (declare (type string data)
+                          (type integer start end))
+                 (unless (= start end)
+                   (setq path (subseq data start end)))
+                 (multiple-value-bind (parsed-data path-start path-end)
+                     (parse-query-string data :start end :end parse-end)
+                   (when parsed-data
+                     (setq query (subseq (the string parsed-data) (the integer path-start) (the integer path-end))))
+                   (multiple-value-bind (data start end)
+                       (parse-fragment-string data :start (or path-end end) :end parse-end)
+                     (when data
+                       (setq fragment (subseq (the string data) (the integer start) (the integer end)))))))))
+        (multiple-value-bind (data start end)
+            (handler-case (parse-scheme-string data :start parse-start :end parse-end)
+              (uri-malformed-string ()
+                ;; assume this is a relative uri.
+                (return (parse-from-path data parse-start))))
+          (declare (type string data)
+                   (type integer start end))
+          (setq scheme
+                (cond ((string-equal data "http"
+                                     :start1 start :end1 end)
+                       :http)
+                      ((string-equal data "https"
+                                     :start1 start :end1 end)
+                       :https)
+                      (T (intern (string-upcase (subseq data start end)) :keyword))))
+          (incf end)
+          (unless (= end parse-end)
+            (multiple-value-bind (data userinfo-start userinfo-end
+                                  host-start host-end port-start port-end)
+                (parse-authority-string data :start end :end parse-end)
+              (declare (type string data)
+                       (type integer host-start host-end))
+              (when userinfo-start
+                (setq userinfo (subseq data (the integer userinfo-start) (the integer userinfo-end))))
+              (unless (= host-start host-end)
+                (setq host (subseq data host-start host-end)))
+              (when port-start
+                (handler-case
+                    (setq port
+                          (parse-integer data :start (the integer port-start) :end (the integer port-end)))
+                  (error ()
+                    (error 'uri-invalid-port))))
+              (parse-from-path data (or port-end host-end)))))))
+    (values scheme userinfo host port path query fragment)))
+
+(defun parse-integer-from-bv (data &key (start 0) end)
+  (declare (type integer start end)
+           (optimize (speed 3) (safety 2)))
+  (do ((i start (1+ i))
+       (res 0))
+      ((= i end) res)
+    (declare (type integer i))
+    (let ((code (aref data i)))
+      (declare (type integer code))
+      (unless (<= #.(char-code #\0) code #.(char-code #\9))
+        (error 'uri-invalid-port))
+
+      (setq res (+ (* res 10)
+                   (- code #.(char-code #\0)))))))
+
+(defun parse-uri-byte-vector (data &key (start 0) end)
+  (declare (type simple-byte-vector data)
+           (optimize (speed 3) (safety 2)))
+  (let (scheme userinfo host port path query fragment
+        (parse-start start)
+        (parse-end (or end (length data))))
+    (declare (type integer parse-start parse-end))
+    (flet ((subseq* (data &optional (start 0) end)
+             (declare (type simple-byte-vector data))
+             (values (babel:octets-to-string data :start start :end end))))
       (block nil
         (flet ((parse-from-path (data start)
-                 (declare (type integer start))
+                 (declare (type simple-byte-vector data)
+                          (type integer start))
                  (multiple-value-bind (data start end)
-                     (parse-path data :start start)
+                     (parse-path-byte-vector data :start start)
                    (declare (type integer start end))
                    (unless (= start end)
                      (setq path (subseq* data start end)))
                    (multiple-value-bind (parsed-data path-start path-end)
-                       (parse-query data :start end :end parse-end)
+                       (parse-query-byte-vector data :start end :end parse-end)
                      (when parsed-data
                        (setq query (subseq* parsed-data (the integer path-start) (the integer path-end))))
                      (multiple-value-bind (data start end)
-                         (parse-fragment data :start (or path-end end) :end parse-end)
+                         (parse-fragment-byte-vector data :start (or path-end end) :end parse-end)
                        (when data
                          (setq fragment (subseq* data (the integer start) (the integer end)))))))))
           (multiple-value-bind (data start end)
-              (handler-case (parse-scheme data :start parse-start :end parse-end)
+              (handler-case (parse-scheme-byte-vector data :start parse-start :end parse-end)
                 (uri-malformed-string ()
                   ;; assume this is a relative uri.
                   (return (parse-from-path data parse-start))))
-            (declare (type integer start end))
+            (declare (type simple-byte-vector data)
+                     (type integer start end))
             (setq scheme
-                  (convert-to-scheme-keyword data start end))
+                  (let ((data-str (make-string (- end start))))
+                    (do ((i start (1+ i))
+                         (j 0 (1+ j)))
+                        ((= i end))
+                      (let ((code (aref data i)))
+                        (setf (aref data-str j)
+                              (code-char
+                               (if (<= #.(char-code #\a) code #.(char-code #\z))
+                                   (- code 32)
+                                   code)))))
+                    (cond ((string-equal data-str "http")
+                           :http)
+                          ((string-equal data-str "https")
+                           :https)
+                          (T (intern data-str :keyword)))))
             (incf end)
             (unless (= end parse-end)
               (multiple-value-bind (data userinfo-start userinfo-end
                                     host-start host-end port-start port-end)
-                  (parse-authority data :start end :end parse-end)
-                (declare (type integer host-start host-end))
+                  (parse-authority-byte-vector data :start end :end parse-end)
+                (declare (type simple-byte-vector data)
+                         (type integer host-start host-end))
                 (when userinfo-start
                   (setq userinfo (subseq* data (the integer userinfo-start) (the integer userinfo-end))))
                 (unless (= host-start host-end)
                   (setq host (subseq* data host-start host-end)))
                 (when port-start
-                  (handler-case
-                      (setq port
-                            (parse-integer data :start (the integer port-start) :end (the integer port-end)))
-                    (error ()
-                      (error 'uri-invalid-port))))
+                  (setq port
+                        (parse-integer-from-bv data :start port-start :end port-end)))
                 (parse-from-path data (or port-end host-end))))))))
     (values scheme userinfo host port path query fragment)))
 
@@ -288,13 +353,27 @@
       (parse-until-byte-vector (#\#) data :start (1+ (the integer ?-pos)) :end end))))
 
 (defun parse-fragment (data &key (start 0) (end (length data)))
-  (declare (type integer start end)
+  (etypecase data
+    (string (parse-fragment-string data :start start :end end))
+    (simple-byte-vector (parse-fragment-byte-vector data :start start :end end))))
+
+(defun parse-fragment-string (data &key (start 0) (end (length data)))
+  (declare (type string data)
+           (type integer start end)
+           (optimize (speed 3) (safety 2)))
+  (let ((|#-pos| (position #\# data
+                           :start start
+                           :end end)))
+    (when |#-pos|
+      (values data (1+ (the integer |#-pos|)) end))))
+
+(defun parse-fragment-byte-vector (data &key (start 0) (end (length data)))
+  (declare (type simple-byte-vector data)
+           (type integer start end)
            (optimize (speed 3) (safety 2)))
   (let ((|#-pos| (position #\# data
                            :start start
                            :end end
-                           :key (etypecase data
-                                  (string #'identity)
-                                  (simple-byte-vector #'code-char)))))
+                           :key #'code-char)))
     (when |#-pos|
       (values data (1+ (the integer |#-pos|)) end))))
