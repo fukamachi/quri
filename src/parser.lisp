@@ -84,8 +84,7 @@
            (optimize (speed 3) (safety 2))
            #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note))
   (with-array-parsing (char p string start end)
-    (declare (type character char)
-             (type integer p))
+    (declare (type integer p))
     (parsing-scheme-start
      (unless (alpha-char-p char)
        (error 'uri-invalid-scheme))
@@ -116,8 +115,7 @@
         port-start
         port-end)
     (with-array-parsing (char p string start end)
-      (declare (type character char)
-               (type integer p))
+      (declare (type integer p))
       (parsing-first
        (cond
          ((char= char #\/)

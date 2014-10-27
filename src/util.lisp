@@ -24,7 +24,7 @@
       `(let ((,p ,start)
              (,g-end (locally (declare #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note))
                        (or ,end (length ,seq))))
-             (,elem #\Nul))
+             ,elem)
          (declare (ignorable ,p ,g-end ,elem))
          ,@(loop for (exp . rest) on body
                  while (and (listp exp) (eq (car exp) 'declare))
