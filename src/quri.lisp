@@ -4,7 +4,8 @@
         :quri.uri
         :quri.uri.ftp
         :quri.uri.http
-        :quri.uri.ldap)
+        :quri.uri.ldap
+        :quri.error)
   (:import-from :quri.parser
                 :parse-uri)
   (:import-from :quri.decode
@@ -55,7 +56,13 @@
            :url-decode
            :url-decode-params
            :url-encode
-           :url-encode-params))
+           :url-encode-params
+
+           :uri-error
+           :uri-malformed-string
+           :uri-invalid-scheme
+           :uri-invalid-port
+           :uri-malformed-urlencoded-string))
 (in-package :quri)
 
 (defun uri (data &key (start 0) end)

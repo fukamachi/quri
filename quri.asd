@@ -22,7 +22,7 @@
                :cl-utilities)
   :components ((:module "src"
                 :components
-                ((:file "quri" :depends-on ("uri" "uri-classes" "parser" "decode" "encode" "port"))
+                ((:file "quri" :depends-on ("uri" "uri-classes" "parser" "decode" "encode" "port" "error"))
                  (:file "uri" :depends-on ("port"))
                  (:module "uri-classes"
                   :pathname "uri"
