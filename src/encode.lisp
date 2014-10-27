@@ -36,14 +36,17 @@
          "!*'();:@&=+$,/?#[] ")
     ary))
 
-(defun url-encode (string &key
-                            (encoding babel-encodings:*default-character-encoding*)
-                            (start 0)
-                            end
-                            space-to-plus)
-  (declare (optimize (speed 3)))
-  (check-type string string)
-  (let* ((octets (babel:string-to-octets string :encoding encoding :start start :end end))
+(defun url-encode (data &key
+                          (encoding babel-encodings:*default-character-encoding*)
+                          (start 0)
+                          end
+                          space-to-plus)
+  (declare (type (or string (simple-array (unsigned-byte 8) (*))) data)
+           (type integer start)
+           (optimize (speed 3) (safety 2)))
+  (let* ((octets (if (stringp data)
+                     (babel:string-to-octets data :encoding encoding :start start :end end)
+                     data))
          (res (make-array (* (length octets) 3) :element-type 'character :fill-pointer t))
          (i 0))
     (declare (type (simple-array (unsigned-byte 8) (*)) octets)
