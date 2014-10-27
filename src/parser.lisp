@@ -6,15 +6,16 @@
   (:import-from :alexandria
                 :with-gensyms
                 :when-let)
-  (:export :parse-uri))
+  (:export :parse-uri-string))
 (in-package :quri.parser)
 
-(defun parse-uri (string)
+(defun parse-uri-string (string &key (start 0) end)
   (declare (type string string)
            (optimize (speed 3) (safety 2)))
   (let (scheme userinfo host port path query fragment
-        (len (length string)))
-    (declare (type integer len))
+        (parse-start start)
+        (parse-end (or end (length string))))
+    (declare (type integer parse-start parse-end))
     (block nil
       (flet ((parse-from-path (string start)
                (declare (type integer start))
@@ -25,18 +26,18 @@
                  (unless (= start end)
                    (setq path (subseq string start end)))
                  (multiple-value-bind (parsed-string path-start path-end)
-                     (parse-query string :start end :end len)
+                     (parse-query string :start end :end parse-end)
                    (when parsed-string
                      (setq query (subseq (the string parsed-string) (the integer path-start) (the integer path-end))))
                    (multiple-value-bind (string start end)
-                       (parse-fragment string :start (or path-end end) :end len)
+                       (parse-fragment string :start (or path-end end) :end parse-end)
                      (when string
                        (setq fragment (subseq (the string string) (the integer start) (the integer end)))))))))
         (multiple-value-bind (string start end)
-            (handler-case (parse-scheme string)
+            (handler-case (parse-scheme string :start parse-start :end parse-end)
               (uri-malformed-string ()
                 ;; assume this is a relative uri.
-                (return (parse-from-path string 0))))
+                (return (parse-from-path string parse-start))))
           (declare (type string string)
                    (type integer start end))
           (setq scheme
@@ -49,10 +50,10 @@
                    :https)
                   (T (intern (string-upcase (subseq string start end)) :keyword))))
           (incf end)
-          (unless (= end len)
+          (unless (= end parse-end)
             (multiple-value-bind (string userinfo-start userinfo-end
                                   host-start host-end port-start port-end)
-                (parse-authority string :start end :end len)
+                (parse-authority string :start end :end parse-end)
               (declare (type string string)
                        (type integer host-start host-end))
               (when userinfo-start
@@ -94,7 +95,7 @@
      (cond
        ((char= char #\:)
         (return-from parse-scheme
-          (values string 0 p)))
+          (values string start p)))
        ((scheme-char-p char)
         (redo))
        (T

@@ -6,7 +6,7 @@
         :quri.uri.http
         :quri.uri.ldap)
   (:import-from :quri.parser
-                :parse-uri)
+                :parse-uri-string)
   (:import-from :quri.decode
                 :url-decode
                 :url-decode-params)
@@ -15,7 +15,7 @@
                 :url-encode-params)
   (:import-from :quri.port
                 :scheme-default-port)
-  (:export :parse-uri
+  (:export :parse-uri-string
 
            :uri
            :uri-p
@@ -57,9 +57,9 @@
            :url-encode-params))
 (in-package :quri)
 
-(defun uri (uri-string)
+(defun uri (uri-string &key (start 0) end)
   (multiple-value-bind (scheme userinfo host port path query fragment)
-      (parse-uri uri-string)
+      (parse-uri-string uri-string :start start :end end)
     (funcall (cond
                ((or (eq scheme :http)
                     (eq scheme :https)) #'make-uri-http)
