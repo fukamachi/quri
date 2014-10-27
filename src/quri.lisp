@@ -84,7 +84,7 @@
               (uri-scheme uri)
               (uri-authority uri)
               (uri-path uri)
-              (uri-typecode uri)
+              (uri-ftp-typecode uri)
               (uri-query uri)
               (uri-fragment uri))
       (format stream
