@@ -18,6 +18,7 @@
   (:export :parse-uri
 
            :uri
+           :uri=
            :uri-p
            :uri-scheme
            :uri-userinfo
@@ -94,6 +95,18 @@
               (uri-path uri)
               (uri-query uri)
               (uri-fragment uri))))
+
+(defun uri= (uri1 uri2)
+  (check-type uri1 uri)
+  (check-type uri2 uri)
+  (when (eq (type-of uri1) (type-of uri2))
+    (and (eq    (uri-scheme uri1)    (uri-scheme uri2))
+         (equal (uri-path uri1)      (uri-path uri2))
+         (equal (uri-query uri1)     (uri-query uri2))
+         (equal (uri-fragment uri1)  (uri-fragment uri2))
+         (equal (uri-authority uri1) (uri-authority uri2))
+         (or (not (uri-ftp-p uri1))
+             (eql (uri-ftp-typecode uri1) (uri-ftp-typecode uri2))))))
 
 (defmethod print-object ((uri uri) stream)
   (format stream "#<~S ~A>"
