@@ -125,6 +125,6 @@
            (redo))
 
           (:eof
-           (if =-mark
-               (collect-pair p)
-               (collect-field p))))))))
+           (cond
+             (=-mark (collect-pair p))
+             (start-mark (collect-field p)))))))))
