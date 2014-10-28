@@ -40,7 +40,7 @@
                        (parse-fragment-string data :start (or path-end end) :end parse-end)
                      (when data
                        (setq fragment (subseq (the string data) (the integer start) (the integer end)))))))))
-        (multiple-value-bind (data start end)
+        (multiple-value-bind (data start end keyword)
             (handler-case (parse-scheme-string data :start parse-start :end parse-end)
               (uri-malformed-string ()
                 ;; assume this is a relative uri.
@@ -48,13 +48,8 @@
           (declare (type string data)
                    (type integer start end))
           (setq scheme
-                (cond ((string-equal data "http"
-                                     :start1 start :end1 end)
-                       :http)
-                      ((string-equal data "https"
-                                     :start1 start :end1 end)
-                       :https)
-                      (T (intern (string-upcase (subseq data start end)) :keyword))))
+                (or keyword
+                    (intern (string-upcase (subseq data start end)) :keyword)))
           (incf end)
           (unless (= end parse-end)
             (multiple-value-bind (data userinfo-start userinfo-end
@@ -116,7 +111,7 @@
                          (parse-fragment-byte-vector data :start (or path-end end) :end parse-end)
                        (when data
                          (setq fragment (subseq* data (the integer start) (the integer end)))))))))
-          (multiple-value-bind (data start end)
+          (multiple-value-bind (data start end keyword)
               (handler-case (parse-scheme-byte-vector data :start parse-start :end parse-end)
                 (uri-malformed-string ()
                   ;; assume this is a relative uri.
@@ -124,21 +119,18 @@
             (declare (type simple-byte-vector data)
                      (type integer start end))
             (setq scheme
-                  (let ((data-str (make-string (- end start))))
-                    (do ((i start (1+ i))
-                         (j 0 (1+ j)))
-                        ((= i end))
-                      (let ((code (aref data i)))
-                        (setf (aref data-str j)
-                              (code-char
-                               (if (<= #.(char-code #\a) code #.(char-code #\z))
-                                   (- code 32)
-                                   code)))))
-                    (cond ((string-equal data-str "http")
-                           :http)
-                          ((string-equal data-str "https")
-                           :https)
-                          (T (intern data-str :keyword)))))
+                  (or keyword
+                      (let ((data-str (make-string (- end start))))
+                        (do ((i start (1+ i))
+                             (j 0 (1+ j)))
+                            ((= i end))
+                          (let ((code (aref data i)))
+                            (setf (aref data-str j)
+                                  (code-char
+                                   (if (<= #.(char-code #\a) code #.(char-code #\z))
+                                       (- code 32)
+                                       code)))))
+                        (intern data-str :keyword))))
             (incf end)
             (unless (= end parse-end)
               (multiple-value-bind (data userinfo-start userinfo-end
@@ -193,6 +185,9 @@
 
 (defun-with-array-parsing parse-scheme (char p data start end)
   (parsing-scheme-start
+   (when (or (char= char #\h)
+             (char= char #\H))
+     (goto parsing-H))
    (unless (standard-alpha-char-p char)
      (error 'uri-invalid-scheme))
    (gonext))
@@ -206,6 +201,41 @@
       (redo))
      (T
       (error 'uri-invalid-scheme))))
+
+  (parsing-H
+   (if (or (char= char #\t)
+           (char= char #\T))
+       (goto parsing-HT)
+       (goto parsing-scheme 0)))
+
+  (parsing-HT
+   (if (or (char= char #\t)
+           (char= char #\T))
+       (goto parsing-HTT)
+       (goto parsing-scheme 0)))
+
+  (parsing-HTT
+   (if (or (char= char #\p)
+           (char= char #\P))
+       (goto parsing-HTTP)
+       (goto parsing-scheme 0)))
+
+  (parsing-HTTP
+   (cond
+     ((char= char #\:)
+      (return-from parse-scheme
+        (values data start p :http)))
+     ((or (char= char #\s)
+          (char= char #\S))
+      (goto parsing-HTTPS))
+     (T (goto parsing-scheme 0))))
+
+  (parsing-HTTPS
+   (if (char= char #\:)
+       (return-from parse-scheme
+         (values data start p :https))
+       (goto parsing-scheme 0)))
+
   (:eof (error 'uri-malformed-string)))
 
 (defun-with-array-parsing parse-authority (char p data start end
