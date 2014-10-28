@@ -7,7 +7,12 @@
         :quri.uri.ldap
         :quri.error)
   (:import-from :quri.parser
-                :parse-uri)
+                :parse-uri
+                :parse-scheme
+                :parse-authority
+                :parse-path
+                :parse-query
+                :parse-fragment)
   (:import-from :quri.decode
                 :url-decode
                 :url-decode-params)
@@ -15,6 +20,11 @@
                 :url-encode
                 :url-encode-params)
   (:export :parse-uri
+           :parse-scheme
+           :parse-authority
+           :parse-path
+           :parse-query
+           :parse-fragment
 
            :uri
            :uri=

@@ -5,7 +5,12 @@
         :quri.util)
   (:import-from :alexandria
                 :with-gensyms)
-  (:export :parse-uri))
+  (:export :parse-uri
+           :parse-scheme
+           :parse-authority
+           :parse-path
+           :parse-query
+           :parse-fragment))
 (in-package :quri.parser)
 
 (deftype simple-byte-vector () '(simple-array (unsigned-byte 8) (*)))
@@ -40,34 +45,32 @@
                        (parse-fragment-string data :start (or path-end end) :end parse-end)
                      (when data
                        (setq fragment (subseq (the string data) (the integer start) (the integer end)))))))))
-        (multiple-value-bind (data start end keyword)
-            (handler-case (parse-scheme-string data :start parse-start :end parse-end)
-              (uri-malformed-string ()
-                ;; assume this is a relative uri.
-                (return (parse-from-path data parse-start))))
-          (declare (type string data)
-                   (type integer start end))
-          (setq scheme
-                (or keyword
-                    (intern (string-upcase (subseq data start end)) :keyword)))
-          (incf end)
-          (unless (= end parse-end)
-            (multiple-value-bind (data userinfo-start userinfo-end
-                                  host-start host-end port-start port-end)
-                (parse-authority-string data :start end :end parse-end)
-              (declare (type string data)
-                       (type integer host-start host-end))
-              (when userinfo-start
-                (setq userinfo (subseq data (the integer userinfo-start) (the integer userinfo-end))))
-              (unless (= host-start host-end)
-                (setq host (subseq data host-start host-end)))
-              (when port-start
-                (handler-case
-                    (setq port
-                          (parse-integer data :start (the integer port-start) :end (the integer port-end)))
-                  (error ()
-                    (error 'uri-invalid-port))))
-              (parse-from-path data (or port-end host-end)))))))
+        (multiple-value-bind (parsed-data start end keyword)
+            (parse-scheme-string data :start parse-start :end parse-end)
+          (unless parsed-data
+            ;; assume this is a relative uri.
+            (return (parse-from-path data parse-start)))
+          (locally (declare (type integer start end))
+            (setq scheme
+                  (or keyword
+                      (intern (string-upcase (subseq data (the integer start) (the integer end))) :keyword)))
+            (unless (= end parse-end)
+              (multiple-value-bind (data userinfo-start userinfo-end
+                                    host-start host-end port-start port-end)
+                  (parse-authority-string data :start end :end parse-end)
+                (declare (type string data)
+                         (type integer host-start host-end))
+                (when userinfo-start
+                  (setq userinfo (subseq data (the integer userinfo-start) (the integer userinfo-end))))
+                (unless (= host-start host-end)
+                  (setq host (subseq data host-start host-end)))
+                (when port-start
+                  (handler-case
+                      (setq port
+                            (parse-integer data :start (the integer port-start) :end (the integer port-end)))
+                    (error ()
+                      (error 'uri-invalid-port))))
+                (parse-from-path data (or port-end host-end))))))))
     (values scheme userinfo host port path query fragment)))
 
 (defun parse-uri-byte-vector (data &key (start 0) end)
@@ -111,41 +114,39 @@
                          (parse-fragment-byte-vector data :start (or path-end end) :end parse-end)
                        (when data
                          (setq fragment (subseq* data (the integer start) (the integer end)))))))))
-          (multiple-value-bind (data start end keyword)
-              (handler-case (parse-scheme-byte-vector data :start parse-start :end parse-end)
-                (uri-malformed-string ()
-                  ;; assume this is a relative uri.
-                  (return (parse-from-path data parse-start))))
-            (declare (type simple-byte-vector data)
-                     (type integer start end))
-            (setq scheme
-                  (or keyword
-                      (let ((data-str (make-string (- end start))))
-                        (do ((i start (1+ i))
-                             (j 0 (1+ j)))
-                            ((= i end))
-                          (let ((code (aref data i)))
-                            (setf (aref data-str j)
-                                  (code-char
-                                   (if (<= #.(char-code #\a) code #.(char-code #\z))
-                                       (- code 32)
-                                       code)))))
-                        (intern data-str :keyword))))
-            (incf end)
-            (unless (= end parse-end)
-              (multiple-value-bind (data userinfo-start userinfo-end
-                                    host-start host-end port-start port-end)
-                  (parse-authority-byte-vector data :start end :end parse-end)
-                (declare (type simple-byte-vector data)
-                         (type integer host-start host-end))
-                (when userinfo-start
-                  (setq userinfo (subseq* data (the integer userinfo-start) (the integer userinfo-end))))
-                (unless (= host-start host-end)
-                  (setq host (subseq* data host-start host-end)))
-                (when port-start
-                  (setq port
-                        (parse-integer-from-bv data :start port-start :end port-end)))
-                (parse-from-path data (or port-end host-end))))))))
+          (multiple-value-bind (parsed-data start end keyword)
+              (parse-scheme-byte-vector data :start parse-start :end parse-end)
+            (unless parsed-data
+              ;; assume this is a relative uri.
+              (return (parse-from-path data parse-start)))
+            (locally (declare (type integer start end))
+              (setq scheme
+                    (or keyword
+                        (let ((data-str (make-string (- end start))))
+                          (do ((i start (1+ i))
+                               (j 0 (1+ j)))
+                              ((= i end))
+                            (let ((code (aref data i)))
+                              (setf (aref data-str j)
+                                    (code-char
+                                     (if (<= #.(char-code #\a) code #.(char-code #\z))
+                                         (- code 32)
+                                         code)))))
+                          (intern data-str :keyword))))
+              (unless (= end parse-end)
+                (multiple-value-bind (data userinfo-start userinfo-end
+                                      host-start host-end port-start port-end)
+                    (parse-authority-byte-vector data :start end :end parse-end)
+                  (declare (type simple-byte-vector data)
+                           (type integer host-start host-end))
+                  (when userinfo-start
+                    (setq userinfo (subseq* data (the integer userinfo-start) (the integer userinfo-end))))
+                  (unless (= host-start host-end)
+                    (setq host (subseq* data host-start host-end)))
+                  (when port-start
+                    (setq port
+                          (parse-integer-from-bv data :start port-start :end port-end)))
+                  (parse-from-path data (or port-end host-end)))))))))
     (values scheme userinfo host port path query fragment)))
 
 (defmacro defun-with-array-parsing (name (char p data start end &rest other-args) &body body)
@@ -189,7 +190,7 @@
              (char= char #\H))
      (goto parsing-H))
    (unless (standard-alpha-char-p char)
-     (error 'uri-invalid-scheme))
+     (return-from parse-scheme nil))
    (gonext))
 
   (parsing-scheme
@@ -200,7 +201,7 @@
      ((scheme-char-p char)
       (redo))
      (T
-      (error 'uri-invalid-scheme))))
+      (return-from parse-scheme nil))))
 
   (parsing-H
    (if (or (char= char #\t)
@@ -236,7 +237,7 @@
          (values data start p :https))
        (goto parsing-scheme 0)))
 
-  (:eof (error 'uri-malformed-string)))
+  (:eof (return-from parse-scheme nil)))
 
 (defun-with-array-parsing parse-authority (char p data start end
                                                 &aux
@@ -250,6 +251,8 @@
                                                 port-end)
   (parsing-first
    (cond
+     ((char= char #\:)
+      (redo))
      ((char= char #\/)
       (gonext))
      (T
