@@ -24,7 +24,7 @@
 
 (defun parse-uri (data &key (start 0) end)
   (etypecase data
-    (string (parse-uri-string data :start start :end end))
+    (simple-string (parse-uri-string data :start start :end end))
     (simple-byte-vector (parse-uri-byte-vector data :start start :end end))))
 
 #+(or sbcl openmcl cmu allegro ecl abcl)
@@ -35,62 +35,64 @@
                 ((symbolp data) (assoc 'type (nth-value 2 (variable-information data env)))))))
     (cond
       ((null type) form)
-      ((subtypep type 'string) `(parse-uri-string ,@(cdr form)))
+      ((subtypep type 'simple-string) `(parse-uri-string ,@(cdr form)))
       ((subtypep type 'simple-byte-vector) `(parse-uri-byte-vector ,@(cdr form)))
       (T form))))
 
 (defun parse-uri-string (data &key (start 0) end)
-  (declare (type string data)
+  (declare (type simple-string data)
            (optimize (speed 3) (safety 2)))
   (let (scheme userinfo host port path query fragment
         (parse-start start)
         (parse-end (or end (length data))))
-    (declare (type integer parse-start parse-end))
+    (declare (type fixnum parse-start parse-end))
     (block nil
       (flet ((parse-from-path (data start)
-               (declare (type string data)
-                        (type integer start))
+               (declare (type simple-string data)
+                        (type fixnum start))
                (multiple-value-bind (data start end)
                    (parse-path-string data :start start)
-                 (declare (type string data)
-                          (type integer start end))
+                 (declare (type simple-string data)
+                          (type fixnum start end))
                  (unless (= start end)
                    (setq path (subseq data start end)))
                  (multiple-value-bind (parsed-data path-start path-end)
                      (parse-query-string data :start end :end parse-end)
                    (when parsed-data
-                     (setq query (subseq (the string parsed-data) (the integer path-start) (the integer path-end))))
+                     (setq query (subseq (the string parsed-data) (the fixnum path-start) (the fixnum path-end))))
                    (multiple-value-bind (data start end)
                        (parse-fragment-string data :start (or path-end end) :end parse-end)
                      (when data
-                       (setq fragment (subseq (the string data) (the integer start) (the integer end)))))))))
+                       (setq fragment (subseq (the string data) (the fixnum start) (the fixnum end)))))))))
         (multiple-value-bind (parsed-data start end keyword)
             (parse-scheme-string data :start parse-start :end parse-end)
           (unless parsed-data
             ;; assume this is a relative uri.
             (return (parse-from-path data parse-start)))
-          (locally (declare (type integer start end))
+          (locally (declare (type fixnum start end))
             (setq scheme
                   (or keyword
-                      (intern (string-upcase (subseq data (the integer start) (the integer end))) :keyword)))
+                      (intern (string-upcase (subseq data start end)) :keyword)))
             (unless (= end parse-end)
               (multiple-value-bind (parsed-data userinfo-start userinfo-end
                                     host-start host-end port-start port-end)
                   (parse-authority-string data :start end :end parse-end)
                 (when parsed-data
-                  (locally (declare (type integer host-start host-end))
+                  (locally (declare (type fixnum host-start host-end))
                     (when userinfo-start
-                      (setq userinfo (subseq (the string data) (the integer userinfo-start) (the integer userinfo-end))))
+                      (setq userinfo (subseq (the string data) (the fixnum userinfo-start) (the fixnum userinfo-end))))
                     (unless (= host-start host-end)
                       (setq host (subseq data host-start host-end)))
-                    (when (and port-start
-                               (not (= port-start port-end)))
-                      (handler-case
-                          (setq port
-                                (parse-integer data :start (the integer port-start) :end (the integer port-end)))
-                        (error ()
-                          (error 'uri-invalid-port))))))
-                (parse-from-path data (or port-end host-end (1+ end)))))))))
+                    (when port-start
+                      (locally (declare (type fixnum port-start port-end))
+                        (unless (= port-start port-end)
+                          (handler-case
+                              (setq port
+                                    (parse-integer data :start (the fixnum port-start) :end (the fixnum port-end)))
+                            (error ()
+                              (error 'uri-invalid-port))))))))
+                (locally (declare (optimize (safety 0)))
+                  (parse-from-path data (or port-end host-end (1+ end))))))))))
     (values scheme userinfo host port path query fragment)))
 
 (defun parse-uri-byte-vector (data &key (start 0) end)
@@ -99,21 +101,22 @@
   (let (scheme userinfo host port path query fragment
         (parse-start start)
         (parse-end (or end (length data))))
-    (declare (type integer parse-start parse-end))
+    (declare (type fixnum parse-start parse-end))
     (flet ((subseq* (data &optional (start 0) end)
              (declare (type simple-byte-vector data))
              (values (babel:octets-to-string data :start start :end end)))
            (parse-integer-from-bv (data &key (start 0) end)
-             (declare (type integer start end)
+             (declare (type fixnum start end)
                       (optimize (speed 3) (safety 2)))
              (when (= start end)
                (return-from parse-integer-from-bv nil))
              (do ((i start (1+ i))
                   (res 0))
                  ((= i end) res)
-               (declare (type integer i))
+               (declare (type fixnum i res))
                (let ((code (aref data i)))
-                 (declare (type integer code))
+                 (declare (type fixnum code)
+                          #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note))
                  (unless (<= #.(char-code #\0) code #.(char-code #\9))
                    (error 'uri-invalid-port))
 
@@ -122,26 +125,26 @@
       (block nil
         (flet ((parse-from-path (data start)
                  (declare (type simple-byte-vector data)
-                          (type integer start))
+                          (type fixnum start))
                  (multiple-value-bind (data start end)
                      (parse-path-byte-vector data :start start)
-                   (declare (type integer start end))
+                   (declare (type fixnum start end))
                    (unless (= start end)
                      (setq path (subseq* data start end)))
                    (multiple-value-bind (parsed-data path-start path-end)
                        (parse-query-byte-vector data :start end :end parse-end)
                      (when parsed-data
-                       (setq query (subseq* parsed-data (the integer path-start) (the integer path-end))))
+                       (setq query (subseq* parsed-data (the fixnum path-start) (the fixnum path-end))))
                      (multiple-value-bind (data start end)
                          (parse-fragment-byte-vector data :start (or path-end end) :end parse-end)
                        (when data
-                         (setq fragment (subseq* data (the integer start) (the integer end)))))))))
+                         (setq fragment (subseq* data (the fixnum start) (the fixnum end)))))))))
           (multiple-value-bind (parsed-data start end keyword)
               (parse-scheme-byte-vector data :start parse-start :end parse-end)
             (unless parsed-data
               ;; assume this is a relative uri.
               (return (parse-from-path data parse-start)))
-            (locally (declare (type integer start end))
+            (locally (declare (type fixnum start end))
               (setq scheme
                     (or keyword
                         (let ((data-str (make-string (- end start))))
@@ -161,15 +164,16 @@
                     (parse-authority-byte-vector data :start end :end parse-end)
                   (when parsed-data
                     (locally (declare (type simple-byte-vector data)
-                                      (type integer host-start host-end))
+                                      (type fixnum host-start host-end))
                       (when userinfo-start
-                        (setq userinfo (subseq* data (the integer userinfo-start) (the integer userinfo-end))))
+                        (setq userinfo (subseq* data (the fixnum userinfo-start) (the fixnum userinfo-end))))
                       (unless (= host-start host-end)
                         (setq host (subseq* data host-start host-end)))
                       (when port-start
                         (setq port
                               (parse-integer-from-bv data :start port-start :end port-end)))))
-                  (parse-from-path data (or port-end host-end (1+ end))))))))))
+                  (locally (declare (optimize (safety 0)))
+                    (parse-from-path data (or port-end host-end (1+ end)))))))))))
     (values scheme userinfo host port path query fragment)))
 
 (defmacro defun-with-array-parsing (name (char p data start end &rest other-args) &body body)
@@ -178,7 +182,7 @@
        (defun ,name (,data &rest ,args &key ,start ,end)
          (declare (ignore ,start ,end))
          (etypecase ,data
-           (string (apply ',(intern (format nil "~A-~A" name :string)) data ,args))
+           (simple-string (apply ',(intern (format nil "~A-~A" name :string)) data ,args))
            (simple-byte-vector (apply ',(intern (format nil "~A-~A" name :byte-vector)) data ,args))))
 
        #+(or sbcl openmcl cmu allegro ecl abcl)
@@ -188,26 +192,26 @@
                         ((constantp ,data) (type-of ,data))
                         ((symbolp ,data) (assoc 'type (nth-value 2 (variable-information ,data ,env)))))))
            (cond
-             ((subtypep ,type 'string) `(parse-uri-string ,@(cdr ,form)))
+             ((subtypep ,type 'simple-string) `(parse-uri-string ,@(cdr ,form)))
              ((subtypep ,type 'simple-byte-vector) `(parse-uri-byte-vector ,@(cdr ,form)))
              (T ,form))))
 
        (defun ,(intern (format nil "~A-~A" name :string)) (,data &key (,start 0) (,end (length ,data)) ,@other-args)
-         (declare (type string ,data)
-                  (type integer ,start ,end)
+         (declare (type simple-string ,data)
+                  (type fixnum ,start ,end)
                   (optimize (speed 3) (safety 2)))
          (block ,name
            (with-string-parsing (,char ,p ,data ,start ,end)
-             (declare (type integer ,p))
+             (declare (type fixnum ,p))
              ,@body)))
 
        (defun ,(intern (format nil "~A-~A" name :byte-vector)) (,data &key (,start 0) (,end (length ,data)) ,@other-args)
          (declare (type simple-byte-vector ,data)
-                  (type integer ,start ,end)
+                  (type fixnum ,start ,end)
                   (optimize (speed 3) (safety 2)))
          (block ,name
            (with-string-parsing (,char ,p ,data ,start ,end #'code-char)
-             (declare (type integer ,p))
+             (declare (type fixnum ,p))
              ,@body))))))
 
 (defun scheme-char-p (char)
@@ -353,7 +357,7 @@
          (do ((,p ,start (1+ ,p)))
              ((= ,p ,end)
               (values ,data ,start ,end))
-           (declare (type integer ,p))
+           (declare (type fixnum ,p))
            (let ((,char (aref ,data ,p)))
              (declare (type character ,char))
              (when (or ,@(loop for delim in delimiters
@@ -367,7 +371,7 @@
          (do ((,p ,start (1+ ,p)))
              ((= ,p ,end)
               (values ,data ,start ,end))
-           (declare (type integer ,p))
+           (declare (type fixnum ,p))
            (let ((,byte (aref ,data ,p)))
              (declare (type (unsigned-byte 8) ,byte))
              (when (or ,@(loop for delim in delimiters
@@ -376,13 +380,13 @@
 
 (defun parse-path (data &key (start 0) (end (length data)))
   (etypecase data
-    (string
+    (simple-string
      (parse-path-string data :start start :end end))
     (simple-byte-vector
      (parse-path-byte-vector data :start start :end end))))
 
 (defun parse-path-string (data &key (start 0) (end (length data)))
-  (declare (type string data)
+  (declare (type simple-string data)
            (optimize (speed 3) (safety 2))
            #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note))
   (parse-until-string (#\? #\#) data :start start :end end))
@@ -401,22 +405,22 @@
      (parse-query-byte-vector data :start start :end end))))
 
 (defun parse-query-string (data &key (start 0) (end (length data)))
-  (declare (type string data)
-           (type integer start end)
+  (declare (type simple-string data)
+           (type fixnum start end)
            (optimize (speed 3) (safety 2))
            #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note))
   (let ((?-pos (position #\? data :start start :end end)))
     (when ?-pos
-      (parse-until-string (#\#) data :start (1+ (the integer ?-pos)) :end end))))
+      (parse-until-string (#\#) data :start (1+ (the fixnum ?-pos)) :end end))))
 
 (defun parse-query-byte-vector (data &key (start 0) (end (length data)))
   (declare (type simple-byte-vector data)
-           (type integer start end)
+           (type fixnum start end)
            (optimize (speed 3) (safety 2))
            #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note))
   (let ((?-pos (position #.(char-code #\?) data :start start :end end)))
     (when ?-pos
-      (parse-until-byte-vector (#\#) data :start (1+ (the integer ?-pos)) :end end))))
+      (parse-until-byte-vector (#\#) data :start (1+ (the fixnum ?-pos)) :end end))))
 
 (defun parse-fragment (data &key (start 0) (end (length data)))
   (etypecase data
@@ -424,22 +428,22 @@
     (simple-byte-vector (parse-fragment-byte-vector data :start start :end end))))
 
 (defun parse-fragment-string (data &key (start 0) (end (length data)))
-  (declare (type string data)
-           (type integer start end)
+  (declare (type simple-string data)
+           (type fixnum start end)
            (optimize (speed 3) (safety 2)))
   (let ((|#-pos| (position #\# data
                            :start start
                            :end end)))
     (when |#-pos|
-      (values data (1+ (the integer |#-pos|)) end))))
+      (values data (1+ (the fixnum |#-pos|)) end))))
 
 (defun parse-fragment-byte-vector (data &key (start 0) (end (length data)))
   (declare (type simple-byte-vector data)
-           (type integer start end)
+           (type fixnum start end)
            (optimize (speed 3) (safety 2)))
   (let ((|#-pos| (position #\# data
                            :start start
                            :end end
                            :key #'code-char)))
     (when |#-pos|
-      (values data (1+ (the integer |#-pos|)) end))))
+      (values data (1+ (the fixnum |#-pos|)) end))))
