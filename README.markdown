@@ -131,9 +131,9 @@ $ git clone https://github.com/fukamachi/quri
 
 |  QURI  |  PURI  |
 |--------|--------|
-| 0.070s | 0.405s |
+| 0.064s | 0.423s |
 
-QURI is approximately **82% faster** than PURI.
+QURI is **6.6 times faster** than PURI.
 
 ### QURI
 
@@ -145,11 +145,11 @@ QURI is approximately **82% faster** than PURI.
 
 ```
 Evaluation took:
-  0.070 seconds of real time
-  0.070449 seconds of total run time (0.070188 user, 0.000261 system)
+  0.064 seconds of real time
+  0.063984 seconds of total run time (0.063745 user, 0.000239 system)
   100.00% CPU
-  210,295,224 processor cycles
-  28,807,664 bytes consed
+  191,340,531 processor cycles
+  28,807,728 bytes consed
 ```
 
 ### PURI
@@ -162,12 +162,12 @@ Evaluation took:
 
 ```
 Evaluation took:
-  0.405 seconds of real time
-  0.406877 seconds of total run time (0.404367 user, 0.002510 system)
-  [ Run times consist of 0.013 seconds GC time, and 0.394 seconds non-GC time. ]
-  100.49% CPU
-  1,211,475,141 processor cycles
-  64,014,384 bytes consed
+  0.423 seconds of real time
+  0.425327 seconds of total run time (0.422234 user, 0.003093 system)
+  [ Run times consist of 0.004 seconds GC time, and 0.422 seconds non-GC time. ]
+  100.47% CPU
+  1,266,663,894 processor cycles
+  64,001,408 bytes consed
 ```
 
 ## Author
