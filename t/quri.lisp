@@ -42,8 +42,16 @@
      ("tel" nil nil "+31-641044153" nil nil))))
 
 (loop for (test-uri . params) in *test-cases* do
-  (let ((uri (uri test-uri)))
-    (subtest test-uri
+  (subtest (format nil "~A (string)" test-uri)
+    (let ((uri (uri test-uri)))
+      (is (uri-scheme uri)   (nth 0 params) "scheme")
+      (is (uri-userinfo uri) (nth 1 params) "userinfo")
+      (is (uri-host uri)     (nth 2 params) "host")
+      (is (uri-path uri)     (nth 3 params) "path")
+      (is (uri-query uri)    (nth 4 params) "query")
+      (is (uri-fragment uri) (nth 5 params) "fragment")))
+  (subtest (format nil "~A (byte-vector)" test-uri)
+    (let ((uri (uri (babel:string-to-octets test-uri))))
       (is (uri-scheme uri)   (nth 0 params) "scheme")
       (is (uri-userinfo uri) (nth 1 params) "userinfo")
       (is (uri-host uri)     (nth 2 params) "host")
