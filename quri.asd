@@ -19,7 +19,8 @@
   :depends-on (:babel
                :alexandria
                :split-sequence
-               :cl-utilities)
+               :cl-utilities
+               #+sbcl :sb-cltl2)
   :components ((:module "src"
                 :components
                 ((:file "quri" :depends-on ("uri" "uri-classes" "parser" "decode" "encode" "error"))

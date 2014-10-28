@@ -3,6 +3,13 @@
   (:use :cl
         :quri.error
         :quri.util)
+  (:import-from #+sbcl :sb-cltl2
+                #+openmcl :ccl
+                #+cmu :ext
+                #+allegro :sys
+                #+ecl :si
+                #+abcl :lisp
+                :variable-information)
   (:import-from :alexandria
                 :with-gensyms)
   (:export :parse-uri
@@ -19,6 +26,18 @@
   (etypecase data
     (string (parse-uri-string data :start start :end end))
     (simple-byte-vector (parse-uri-byte-vector data :start start :end end))))
+
+#+(or sbcl openmcl cmu allegro ecl abcl)
+(define-compiler-macro parse-uri (&whole form &environment env data &key start end)
+  (declare (ignore start end))
+  (let ((type (cond
+                ((constantp data) (type-of data))
+                ((symbolp data) (assoc 'type (nth-value 2 (variable-information data env)))))))
+    (cond
+      ((null type) form)
+      ((subtypep type 'string) `(parse-uri-string ,@(cdr form)))
+      ((subtypep type 'simple-byte-vector) `(parse-uri-byte-vector ,@(cdr form)))
+      (T form))))
 
 (defun parse-uri-string (data &key (start 0) end)
   (declare (type string data)
@@ -150,13 +169,24 @@
     (values scheme userinfo host port path query fragment)))
 
 (defmacro defun-with-array-parsing (name (char p data start end &rest other-args) &body body)
-  (with-gensyms (args)
+  (with-gensyms (args type form env)
     `(progn
        (defun ,name (,data &rest ,args &key ,start ,end)
          (declare (ignore ,start ,end))
          (etypecase ,data
            (string (apply ',(intern (format nil "~A-~A" name :string)) data ,args))
            (simple-byte-vector (apply ',(intern (format nil "~A-~A" name :byte-vector)) data ,args))))
+
+       #+(or sbcl openmcl cmu allegro ecl abcl)
+       (define-compiler-macro ,name (&whole ,form &environment ,env ,data &rest ,args)
+         (declare (ignore ,args))
+         (let ((,type (cond
+                        ((constantp ,data) (type-of ,data))
+                        ((symbolp ,data) (assoc 'type (nth-value 2 (variable-information ,data ,env)))))))
+           (cond
+             ((subtypep ,type 'string) `(parse-uri-string ,@(cdr ,form)))
+             ((subtypep ,type 'simple-byte-vector) `(parse-uri-byte-vector ,@(cdr ,form)))
+             (T ,form))))
 
        (defun ,(intern (format nil "~A-~A" name :string)) (,data &key (,start 0) (,end (length ,data)) ,@other-args)
          (declare (type string ,data)
