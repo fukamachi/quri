@@ -12,7 +12,10 @@
 - Supports userinfo. (ex. `git` in `git@github.com`)
 - Supports IPv6 hostname. (ex. `ldap://[2001:db8::7]/`)
 - Allows byte vectors as input.
+- Takes optional `:start` and `:end` keyword arguments.
+- Low-level parser functions.
 - URL encoding/decoding utilities.
+  - `url-decode`, `url-decode-params`, `url-encode`, `url-encode-params`
 
 ## Usage
 
@@ -22,7 +25,7 @@
 (defvar *uri* (uri "http://www.ics.uci.edu/pub/ietf/uri/#Related"))
 
 *uri*
-;=> #<PURI:URI http://www.ics.uci.edu/pub/ietf/uri/#Related>
+;=> #<QURI.URI.HTTP:URI-HTTP http://www.ics.uci.edu/pub/ietf/uri/#Related>
 
 (uri-scheme *uri*)
 ;=> "http"
@@ -35,23 +38,17 @@
 
 (uri-fragment *uri*)
 ;=> "Related"
-
-(url-encode "/fooあ")
-;=> "%2Ffoo%E3%81%82"
-
-(url-decode "%2Ffoo%E3%81%82")
-;=> "/fooあ"
 ```
 
 ## Functions
 
-### \[Function] `uri`
+### \[Function] uri
 
 Parse a string or a byte vector and return a `uri` object.
 
-### \[Structure] `uri`
+### \[Structure] uri
 
-Structure class as a representation of URIs.
+Structure class as a representation of URIs. The following methods are available for all classes extends this class.
 
 #### Methods
 
@@ -63,7 +60,7 @@ Structure class as a representation of URIs.
 - `uri-authority`
 - `render-uri`
 
-### \[Structure] `urn` (extends `uri`)
+### \[Structure] urn (extends uri)
 
 Structure class as a representation of URNs. All methods of `uri` are also available for this class.
 
@@ -72,15 +69,27 @@ Structure class as a representation of URNs. All methods of `uri` are also avail
 - `urn-nid`
 - `urn-nss`
 
-### \[Structure] `uri-http` (extends `uri`)
+### \[Structure] uri-http (extends uri)
 
 Structure class for HTTP/HTTPS URIs.
 
 #### Methods
 
-- `uri-query-form`
+- `uri-query-params`
 
-### \[Structure] `uri-ftp` (extends `uri`)
+```common-lisp
+(defvar *uri* (quri:uri "http://quickdocs.org/search?q=web"))
+
+(uri-query-params *uri*)
+;=> (("q" . "web"))
+
+(setf (uri-query-params *uri*) '(("q" . "system programming")))
+
+*uri*
+;=> #<QURI.URI.HTTP:URI-HTTP http://quickdocs.org/search?q=system%20programming>
+```
+
+### \[Structure] uri-ftp (extends uri)
 
 Structure class for FTP URIs.
 
@@ -88,7 +97,7 @@ Structure class for FTP URIs.
 
 - `uri-ftp-typecode`
 
-### \[Structure] `uri-ldap` (extends `uri`)
+### \[Structure] uri-ldap (extends uri)
 
 Structure class for LDAP/LDAPS URIs.
 
@@ -100,21 +109,48 @@ Structure class for LDAP/LDAPS URIs.
 - `uri-ldap-filter`
 - `uri-ldap-extensions`
 
-### \[Function] `url-decode`
+### \[Function] url-decode
 
 Decode a Percent-Encoded string or byte vector.
 
-### \[Function] `url-decode-params`
+```common-lisp
+(url-decode "%2Ffoo%E3%81%82")
+;=> "/fooあ"
+```
+
+### \[Function] url-decode-params
 
 Decode a [form-urlencoded](http://tools.ietf.org/html/rfc1866#section-8.2.1) string or byte vector and return an association list.
 
-### \[Function] `url-encode`
+### \[Function] url-encode
 
 Encode a string or a byte vector into a Percent-Encoded string.
 
-### \[Function] `url-encode-params`
+```common-lisp
+(url-encode "/fooあ")
+;=> "%2Ffoo%E3%81%82"
+```
+
+### \[Function] url-encode-params
 
 Encode an association list into a [form-urlencoded](http://tools.ietf.org/html/rfc1866#section-8.2.1) string.
+
+## Low-level functions
+
+### \[Function] parse-uri
+
+Parse a URI string or a URI byte vector and return 7 URI components -- scheme, userinfo, host name, port, path, query and fragment.
+
+```common-lisp
+(parse-uri "http://www.ics.uci.edu/pub/ietf/uri/#Related")
+;=> "http"
+;   NIL
+;   "www.ics.uci.edu"
+;   NIL
+;   "/pub/ietf/uri/"
+;   NIL
+;   "Related"
+```
 
 ## Installation
 
