@@ -426,6 +426,18 @@
     (simple-byte-vector
      (parse-query-byte-vector data :start start :end end))))
 
+#+(or sbcl openmcl cmu allegro ecl abcl)
+(define-compiler-macro parse-query (&whole form &environment env data &key start end)
+  (declare (ignore start end))
+  (let ((type (cond
+                ((constantp data) (type-of data))
+                ((symbolp data) (assoc 'type (nth-value 2 (variable-information data env)))))))
+    (cond
+      ((null type) form)
+      ((subtypep type 'simple-string) `(parse-query-string ,@(cdr form)))
+      ((subtypep type 'simple-byte-vector) `(parse-query-byte-vector ,@(cdr form)))
+      (T form))))
+
 (defun parse-query-string (data &key (start 0) (end (length data)))
   (declare (type simple-string data)
            (type fixnum start end)
@@ -446,6 +458,18 @@
   (etypecase data
     (string (parse-fragment-string data :start start :end end))
     (simple-byte-vector (parse-fragment-byte-vector data :start start :end end))))
+
+#+(or sbcl openmcl cmu allegro ecl abcl)
+(define-compiler-macro parse-fragment (&whole form &environment env data &key start end)
+  (declare (ignore start end))
+  (let ((type (cond
+                ((constantp data) (type-of data))
+                ((symbolp data) (assoc 'type (nth-value 2 (variable-information data env)))))))
+    (cond
+      ((null type) form)
+      ((subtypep type 'simple-string) `(parse-fragment-string ,@(cdr form)))
+      ((subtypep type 'simple-byte-vector) `(parse-fragment-byte-vector ,@(cdr form)))
+      (T form))))
 
 (defun parse-fragment-string (data &key (start 0) (end (length data)))
   (declare (type simple-string data)
