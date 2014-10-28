@@ -24,7 +24,7 @@
         (parse-ftp-typecode (uri-path ftp))
       (when path
         (setf (uri-path ftp) path
-              (uri-typecode ftp) typecode)))
+              (uri-ftp-typecode ftp) typecode)))
     ftp))
 
 (defun parse-ftp-typecode (path)
