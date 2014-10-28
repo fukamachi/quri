@@ -25,7 +25,7 @@
 ;=> #<PURI:URI http://www.ics.uci.edu/pub/ietf/uri/#Related>
 
 (uri-scheme *uri*)
-;=> :HTTP
+;=> "http"
 
 (uri-host *uri*)
 ;=> "www.ics.uci.edu"
