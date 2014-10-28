@@ -286,6 +286,7 @@
   (parsing-first
    (cond
      ((char= char #\:)
+      (incf start)
       (redo))
      ((char= char #\/)
       (gonext))
