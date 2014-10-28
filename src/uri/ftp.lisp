@@ -6,13 +6,15 @@
                 :scheme
                 :port
                 :uri-path)
+  (:import-from :quri.port
+                :scheme-default-port)
   (:export :uri-ftp
            :uri-ftp-p
            :uri-ftp-typecode
            :make-uri-ftp))
 (in-package :quri.uri.ftp)
 
-(defstruct (uri-ftp (:include uri (scheme :ftp) (port 21))
+(defstruct (uri-ftp (:include uri (scheme :ftp) (port #.(scheme-default-port :ftp)))
                     (:constructor %make-uri-ftp))
   typecode)
 

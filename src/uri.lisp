@@ -22,7 +22,7 @@
            :urn-nss))
 (in-package :quri.uri)
 
-(defstruct uri
+(defstruct (uri (:constructor %make-uri))
   scheme
   userinfo
   host
@@ -30,6 +30,13 @@
   path
   query
   fragment)
+
+(defun make-uri (&rest initargs)
+  (let ((uri (apply #'%make-uri initargs)))
+    (unless (uri-port uri)
+      (setf (uri-port uri)
+            (scheme-default-port (uri-scheme uri))))
+    uri))
 
 (defun uri-authority (uri)
   (when (uri-host uri)

@@ -7,6 +7,8 @@
                 :port
                 :uri-path
                 :uri-query)
+  (:import-from :quri.port
+                :scheme-default-port)
   (:import-from :split-sequence
                 :split-sequence)
   (:import-from :alexandria
@@ -14,6 +16,11 @@
   (:export :uri-ldap
            :make-uri-ldap
            :uri-ldap-p
+
+           :uri-ldaps
+           :make-uri-ldaps
+           :uri-ldaps-p
+
            :uri-ldap-dn
            :uri-ldap-attributes
            :uri-ldap-scope
@@ -21,7 +28,9 @@
            :uri-ldap-extensions))
 (in-package :quri.uri.ldap)
 
-(defstruct (uri-ldap (:include uri (scheme :ldap) (port 389))))
+(defstruct (uri-ldap (:include uri (scheme :ldap) (port #.(scheme-default-port :ldap)))))
+
+(defstruct (uri-ldaps (:include uri-ldap (scheme :ldaps) (port #.(scheme-default-port :ldaps)))))
 
 (defun uri-ldap-dn (ldap)
   (let ((path (uri-path ldap)))

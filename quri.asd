@@ -22,11 +22,11 @@
                :cl-utilities)
   :components ((:module "src"
                 :components
-                ((:file "quri" :depends-on ("uri" "uri-classes" "parser" "decode" "encode" "port" "error"))
+                ((:file "quri" :depends-on ("uri" "uri-classes" "parser" "decode" "encode" "error"))
                  (:file "uri" :depends-on ("port"))
                  (:module "uri-classes"
                   :pathname "uri"
-                  :depends-on ("uri" "encode" "decode")
+                  :depends-on ("uri" "port" "encode" "decode")
                   :components
                   ((:file "ftp")
                    (:file "http")

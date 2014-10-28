@@ -14,8 +14,6 @@
   (:import-from :quri.encode
                 :url-encode
                 :url-encode-params)
-  (:import-from :quri.port
-                :scheme-default-port)
   (:export :parse-uri
 
            :uri
@@ -68,22 +66,24 @@
 (defun uri (data &key (start 0) end)
   (multiple-value-bind (scheme userinfo host port path query fragment)
       (parse-uri data :start start :end end)
-    (funcall (cond
-               ((or (eq scheme :http)
-                    (eq scheme :https)) #'make-uri-http)
-               ((or (eq scheme :ldap)
-                    (eq scheme :ldaps)) #'make-uri-ldap)
-               ((eq scheme :ftp)        #'make-uri-ftp)
-               ((eq scheme :urn)        #'make-urn)
-               (T                       #'make-uri))
-             :port (or port
-                       (scheme-default-port scheme))
-             :scheme scheme
-             :userinfo userinfo
-             :host host
-             :path path
-             :query query
-             :fragment fragment)))
+    (apply (cond
+             ((eq scheme :http)  #'make-uri-http)
+             ((eq scheme :https) #'make-uri-https)
+             ((eq scheme :ldap)  #'make-uri-ldap)
+             ((eq scheme :ldaps) #'make-uri-ldaps)
+             ((eq scheme :ftp)   #'make-uri-ftp)
+             ((eq scheme :urn)   #'make-urn)
+             (T                  #'make-uri))
+
+           :scheme scheme
+           :userinfo userinfo
+           :host host
+           :path path
+           :query query
+           :fragment fragment
+
+           (and port
+                `(:port ,port)))))
 
 (defun render-uri (uri &optional stream)
   (if (uri-ftp-p uri)
