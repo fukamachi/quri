@@ -83,7 +83,8 @@
                       (setq userinfo (subseq (the string data) (the integer userinfo-start) (the integer userinfo-end))))
                     (unless (= host-start host-end)
                       (setq host (subseq data host-start host-end)))
-                    (when port-start
+                    (when (and port-start
+                               (not (= port-start port-end)))
                       (handler-case
                           (setq port
                                 (parse-integer data :start (the integer port-start) :end (the integer port-end)))
@@ -105,6 +106,8 @@
            (parse-integer-from-bv (data &key (start 0) end)
              (declare (type integer start end)
                       (optimize (speed 3) (safety 2)))
+             (when (= start end)
+               (return-from parse-integer-from-bv nil))
              (do ((i start (1+ i))
                   (res 0))
                  ((= i end) res)

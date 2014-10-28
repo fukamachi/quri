@@ -35,7 +35,9 @@
     ("http:" .
      (:http nil nil nil nil nil))
     ("ldap://[2001:db8::7]/c=GB?objectClass?one" .
-     (:ldap nil "[2001:db8::7]" "/c=GB" "objectClass?one" nil))))
+     (:ldap nil "[2001:db8::7]" "/c=GB" "objectClass?one" nil))
+    ("http://[dead:beef::]:/foo/" .
+     (:http nil "[dead:beef::]" "/foo/" nil nil))))
 
 (loop for (test-uri . params) in *test-cases* do
   (let ((uri (uri test-uri)))
