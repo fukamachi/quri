@@ -14,7 +14,7 @@
            :make-uri-ftp))
 (in-package :quri.uri.ftp)
 
-(defstruct (uri-ftp (:include uri (scheme :ftp) (port #.(scheme-default-port :ftp)))
+(defstruct (uri-ftp (:include uri (scheme "ftp") (port #.(scheme-default-port "ftp")))
                     (:constructor %make-uri-ftp))
   typecode)
 

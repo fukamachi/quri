@@ -64,15 +64,15 @@
                        (parse-fragment-string data :start (or path-end end) :end parse-end)
                      (when data
                        (setq fragment (subseq (the string data) (the fixnum start) (the fixnum end)))))))))
-        (multiple-value-bind (parsed-data start end keyword)
+        (multiple-value-bind (parsed-data start end got-scheme)
             (parse-scheme-string data :start parse-start :end parse-end)
           (unless parsed-data
             ;; assume this is a relative uri.
             (return (parse-from-path data parse-start)))
           (locally (declare (type fixnum start end))
             (setq scheme
-                  (or keyword
-                      (intern (string-upcase (subseq data start end)) :keyword)))
+                  (or got-scheme
+                      (string-downcase (subseq data start end))))
             (unless (= end parse-end)
               (multiple-value-bind (parsed-data userinfo-start userinfo-end
                                     host-start host-end port-start port-end)
@@ -139,25 +139,24 @@
                          (parse-fragment-byte-vector data :start (or path-end end) :end parse-end)
                        (when data
                          (setq fragment (subseq* data (the fixnum start) (the fixnum end)))))))))
-          (multiple-value-bind (parsed-data start end keyword)
+          (multiple-value-bind (parsed-data start end got-scheme)
               (parse-scheme-byte-vector data :start parse-start :end parse-end)
             (unless parsed-data
               ;; assume this is a relative uri.
               (return (parse-from-path data parse-start)))
             (locally (declare (type fixnum start end))
               (setq scheme
-                    (or keyword
+                    (or got-scheme
                         (let ((data-str (make-string (- end start))))
                           (do ((i start (1+ i))
                                (j 0 (1+ j)))
-                              ((= i end))
+                              ((= i end) data-str)
                             (let ((code (aref data i)))
                               (setf (aref data-str j)
                                     (code-char
-                                     (if (<= #.(char-code #\a) code #.(char-code #\z))
-                                         (- code 32)
-                                         code)))))
-                          (intern data-str :keyword))))
+                                     (if (<= #.(char-code #\A) code #.(char-code #\Z))
+                                         (+ code 32)
+                                         code))))))))
               (unless (= end parse-end)
                 (multiple-value-bind (parsed-data userinfo-start userinfo-end
                                       host-start host-end port-start port-end)
@@ -263,7 +262,7 @@
    (cond
      ((char= char #\:)
       (return-from parse-scheme
-        (values data start p :http)))
+        (values data start p "http")))
      ((or (char= char #\s)
           (char= char #\S))
       (goto parsing-HTTPS))
@@ -272,7 +271,7 @@
   (parsing-HTTPS
    (if (char= char #\:)
        (return-from parse-scheme
-         (values data start p :https))
+         (values data start p "https"))
        (goto parsing-scheme 0)))
 
   (:eof (return-from parse-scheme nil)))

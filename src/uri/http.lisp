@@ -25,9 +25,9 @@
            :uri-query-form))
 (in-package :quri.uri.http)
 
-(defstruct (uri-http (:include uri (scheme :http) (port #.(scheme-default-port :http)))))
+(defstruct (uri-http (:include uri (scheme "http") (port #.(scheme-default-port "http")))))
 
-(defstruct (uri-https (:include uri-http (scheme :https) (port #.(scheme-default-port :https)))))
+(defstruct (uri-https (:include uri-http (scheme "https") (port #.(scheme-default-port "https")))))
 
 (defun uri-query-form (http)
   (when-let (query (uri-query http))

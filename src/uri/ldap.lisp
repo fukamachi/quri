@@ -28,9 +28,9 @@
            :uri-ldap-extensions))
 (in-package :quri.uri.ldap)
 
-(defstruct (uri-ldap (:include uri (scheme :ldap) (port #.(scheme-default-port :ldap)))))
+(defstruct (uri-ldap (:include uri (scheme "ldap") (port #.(scheme-default-port "ldap")))))
 
-(defstruct (uri-ldaps (:include uri-ldap (scheme :ldaps) (port #.(scheme-default-port :ldaps)))))
+(defstruct (uri-ldaps (:include uri-ldap (scheme "ldaps") (port #.(scheme-default-port "ldaps")))))
 
 (defun uri-ldap-dn (ldap)
   (let ((path (uri-path ldap)))

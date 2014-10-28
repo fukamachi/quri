@@ -8,14 +8,14 @@
 
 (defvar +default-ports+
   (plist-hash-table
-   '(:ftp 21
-     :ssh 22
-     :telnet 23
-     :http 80
-     :ldap 389
-     :https 443
-     :ldaps 636)
-   :test 'eq))
+   '("ftp" 21
+     "ssh" 22
+     "telnet" 23
+     "http" 80
+     "ldap" 389
+     "https" 443
+     "ldaps" 636)
+   :test 'equal))
 
 (defun scheme-default-port (scheme)
   (gethash scheme +default-ports+))
