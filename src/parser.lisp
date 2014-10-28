@@ -177,41 +177,56 @@
 
 (defmacro defun-with-array-parsing (name (char p data start end &rest other-args) &body body)
   (with-gensyms (args type form env)
-    `(progn
-       (defun ,name (,data &rest ,args &key ,start ,end)
-         (declare (ignore ,start ,end))
-         (etypecase ,data
-           (simple-string (apply ',(intern (format nil "~A-~A" name :string)) data ,args))
-           (simple-byte-vector (apply ',(intern (format nil "~A-~A" name :byte-vector)) data ,args))))
+    (let ((fn-for-string (intern (format nil "~A-~A" name :string)))
+          (fn-for-byte-vector (intern (format nil "~A-~A" name :byte-vector))))
+      `(progn
+         (defun ,name (,data &rest ,args &key ,start ,end)
+           (declare (ignore ,start ,end))
+           (etypecase ,data
+             (simple-string (apply ',(intern (format nil "~A-~A" name :string)) data ,args))
+             (simple-byte-vector (apply ',(intern (format nil "~A-~A" name :byte-vector)) data ,args))))
 
-       #+(or sbcl openmcl cmu allegro ecl abcl)
-       (define-compiler-macro ,name (&whole ,form &environment ,env ,data &rest ,args)
-         (declare (ignore ,args))
-         (let ((,type (cond
-                        ((constantp ,data) (type-of ,data))
-                        ((symbolp ,data) (assoc 'type (nth-value 2 (variable-information ,data ,env)))))))
-           (cond
-             ((subtypep ,type 'simple-string) `(parse-uri-string ,@(cdr ,form)))
-             ((subtypep ,type 'simple-byte-vector) `(parse-uri-byte-vector ,@(cdr ,form)))
-             (T ,form))))
+         #+(or sbcl openmcl cmu allegro ecl abcl)
+         (define-compiler-macro ,name (&whole ,form &environment ,env ,data &rest ,args)
+           (declare (ignore ,args))
+           (let ((,type (cond
+                          ((constantp ,data) (type-of ,data))
+                          ((symbolp ,data) (assoc 'type (nth-value 2 (variable-information ,data ,env)))))))
+             (cond
+               ((null ,type) ,form)
+               ((subtypep ,type 'simple-string) `(,',fn-for-string ,@(cdr ,form)))
+               ((subtypep ,type 'simple-byte-vector) `(,',fn-for-byte-vector ,@(cdr ,form)))
+               (T ,form))))
 
-       (defun ,(intern (format nil "~A-~A" name :string)) (,data &key (,start 0) (,end (length ,data)) ,@other-args)
-         (declare (type simple-string ,data)
-                  (type fixnum ,start ,end)
-                  (optimize (speed 3) (safety 2)))
-         (block ,name
-           (with-string-parsing (,char ,p ,data ,start ,end)
-             (declare (type fixnum ,p))
-             ,@body)))
+         (defun ,fn-for-string (,data &key (,start 0) (,end (length ,data)) ,@other-args)
+           (declare (type simple-string ,data)
+                    (type fixnum ,start ,end)
+                    (optimize (speed 3) (safety 2)))
+           (macrolet ((char=* (char1 char2)
+                        `(char= ,char1 ,char2))
+                      (scheme-char-p* (char)
+                        `(scheme-char-p ,char))
+                      (standard-alpha-char-p* (char)
+                        `(standard-alpha-char-p ,char)))
+             (block ,name
+               (with-string-parsing (,char ,p ,data ,start ,end)
+                 (declare (type fixnum ,p))
+                 ,@body))))
 
-       (defun ,(intern (format nil "~A-~A" name :byte-vector)) (,data &key (,start 0) (,end (length ,data)) ,@other-args)
-         (declare (type simple-byte-vector ,data)
-                  (type fixnum ,start ,end)
-                  (optimize (speed 3) (safety 2)))
-         (block ,name
-           (with-string-parsing (,char ,p ,data ,start ,end #'code-char)
-             (declare (type fixnum ,p))
-             ,@body))))))
+         (defun ,fn-for-byte-vector (,data &key (,start 0) (,end (length ,data)) ,@other-args)
+           (declare (type simple-byte-vector ,data)
+                    (type fixnum ,start ,end)
+                    (optimize (speed 3) (safety 2)))
+           (macrolet ((char=* (byte char)
+                        `(= ,byte ,(char-code char)))
+                      (scheme-char-p* (byte)
+                        `(scheme-byte-p ,byte))
+                      (standard-alpha-char-p* (byte)
+                        `(standard-alpha-byte-p ,byte)))
+             (block ,name
+               (with-byte-array-parsing (,char ,p ,data ,start ,end)
+                 (declare (type fixnum ,p))
+                 ,@body))))))))
 
 (defun scheme-char-p (char)
   (declare (type character char)
@@ -221,55 +236,63 @@
       (char= char #\-)
       (char= char #\.)))
 
+(defun scheme-byte-p (byte)
+  (declare (type (unsigned-byte 8) byte)
+           (optimize (speed 3) (safety 0)))
+  (or (standard-alphanumeric-byte-p byte)
+      (= byte (char-code #\+))
+      (= byte (char-code #\-))
+      (= byte (char-code #\.))))
+
 (defun-with-array-parsing parse-scheme (char p data start end)
   (parsing-scheme-start
-   (when (or (char= char #\h)
-             (char= char #\H))
+   (when (or (char=* char #\h)
+             (char=* char #\H))
      (goto parsing-H))
-   (unless (standard-alpha-char-p char)
+   (unless (standard-alpha-char-p* char)
      (return-from parse-scheme nil))
    (gonext))
 
   (parsing-scheme
    (cond
-     ((char= char #\:)
+     ((char=* char #\:)
       (return-from parse-scheme
         (values data start p)))
-     ((scheme-char-p char)
+     ((scheme-char-p* char)
       (redo))
      (T
       (return-from parse-scheme nil))))
 
   (parsing-H
-   (if (or (char= char #\t)
-           (char= char #\T))
+   (if (or (char=* char #\t)
+           (char=* char #\T))
        (goto parsing-HT)
        (goto parsing-scheme 0)))
 
   (parsing-HT
-   (if (or (char= char #\t)
-           (char= char #\T))
+   (if (or (char=* char #\t)
+           (char=* char #\T))
        (goto parsing-HTT)
        (goto parsing-scheme 0)))
 
   (parsing-HTT
-   (if (or (char= char #\p)
-           (char= char #\P))
+   (if (or (char=* char #\p)
+           (char=* char #\P))
        (goto parsing-HTTP)
        (goto parsing-scheme 0)))
 
   (parsing-HTTP
    (cond
-     ((char= char #\:)
+     ((char=* char #\:)
       (return-from parse-scheme
         (values data start p "http")))
-     ((or (char= char #\s)
-          (char= char #\S))
+     ((or (char=* char #\s)
+          (char=* char #\S))
       (goto parsing-HTTPS))
      (T (goto parsing-scheme 0))))
 
   (parsing-HTTPS
-   (if (char= char #\:)
+   (if (char=* char #\:)
        (return-from parse-scheme
          (values data start p "https"))
        (goto parsing-scheme 0)))
@@ -288,33 +311,33 @@
                                                 port-end)
   (parsing-first
    (cond
-     ((char= char #\:)
+     ((char=* char #\:)
       (incf start)
       (redo))
-     ((char= char #\/)
+     ((char=* char #\/)
       (gonext))
      (T
       (return-from parse-authority
         (values data nil nil start start nil nil)))))
 
   (parsing-authority-starting
-   (unless (char= char #\/)
+   (unless (char=* char #\/)
      (error 'uri-malformed-string))
    (gonext))
 
   (parsing-authority-start
    (setq authority-mark p)
-   (if (char= char #\[)
+   (if (char=* char #\[)
        (goto parsing-ipliteral)
        (gonext 0)))
 
   ;; parsing host or userinfo
   (parsing-authority
    (cond
-     ((char= char #\:)
+     ((char=* char #\:)
       (setq colon-mark p)
       (redo))
-     ((char= char #\@)
+     ((char=* char #\@)
       (when userinfo-start
         (error 'uri-malformed-string))
       (setq userinfo-start authority-mark
@@ -322,14 +345,14 @@
       (setq authority-mark (1+ p)
             colon-mark nil)
       (redo))
-     ((or (char= char #\/)
-          (char= char #\?)
-          (char= char #\#))
+     ((or (char=* char #\/)
+          (char=* char #\?)
+          (char=* char #\#))
       (go :eof))
      (T (redo))))
 
   (parsing-ipliteral
-   (if (char= char #\])
+   (if (char=* char #\])
        (goto parsing-authority)
        (redo)))
 
@@ -406,8 +429,7 @@
 (defun parse-query-string (data &key (start 0) (end (length data)))
   (declare (type simple-string data)
            (type fixnum start end)
-           (optimize (speed 3) (safety 2))
-           #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note))
+           (optimize (speed 3) (safety 2)))
   (let ((?-pos (position #\? data :start start :end end)))
     (when ?-pos
       (parse-until-string (#\#) data :start (1+ (the fixnum ?-pos)) :end end))))
@@ -415,8 +437,7 @@
 (defun parse-query-byte-vector (data &key (start 0) (end (length data)))
   (declare (type simple-byte-vector data)
            (type fixnum start end)
-           (optimize (speed 3) (safety 2))
-           #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note))
+           (optimize (speed 3) (safety 2)))
   (let ((?-pos (position #.(char-code #\?) data :start start :end end)))
     (when ?-pos
       (parse-until-byte-vector (#\#) data :start (1+ (the fixnum ?-pos)) :end end))))

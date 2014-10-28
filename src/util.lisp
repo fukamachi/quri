@@ -4,7 +4,9 @@
   (:import-from :alexandria
                 :with-gensyms)
   (:export :standard-alpha-char-p
+           :standard-alpha-byte-p
            :standard-alphanumeric-p
+           :standard-alphanumeric-byte-p
            :with-array-parsing
            :with-string-parsing
            :with-byte-array-parsing
@@ -16,15 +18,25 @@
 (defun standard-alpha-char-p (char)
   (declare (type character char)
            (optimize (speed 3) (safety 0)))
-  (let ((code (char-code char)))
-    (or (<= (char-code #\A) code (char-code #\Z))
-        (<= (char-code #\a) code (char-code #\z)))))
+  (standard-alpha-byte-p (char-code char)))
+
+(defun standard-alpha-byte-p (byte)
+  (declare (type (unsigned-byte 8) byte)
+           (optimize (speed 3) (safety 0)))
+  (or (<= #.(char-code #\A) byte #.(char-code #\Z))
+      (<= #.(char-code #\a) byte #.(char-code #\z))))
 
 (defun standard-alphanumeric-p (char)
   (declare (type character char)
            (optimize (speed 3) (safety 0)))
   (or (digit-char-p char)
       (standard-alpha-char-p char)))
+
+(defun standard-alphanumeric-byte-p (byte)
+  (declare (type (unsigned-byte 8) byte)
+           (optimize (speed 3) (safety 0)))
+  (or (<= #.(char-code #\0) byte #.(char-code #\9))
+      (standard-alpha-byte-p byte)))
 
 (define-condition parsing-end-unexpectedly (simple-error)
   ((state :initarg :state
