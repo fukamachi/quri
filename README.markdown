@@ -11,6 +11,7 @@
 - Doesn't encode/decode URL implicitly.
 - Supports userinfo. (ex. `git` in `git@github.com`)
 - Supports IPv6 hostname. (ex. `ldap://[2001:db8::7]/`)
+- Supports byte vectors for input.
 - URL encoding/decoding utilities.
 
 ## Usage
@@ -46,7 +47,7 @@
 
 ### \[Function] `uri`
 
-Parse a string and return a `uri` object.
+Parse a string or a byte vector and return a `uri` object.
 
 ### \[Structure] `uri`
 
@@ -101,15 +102,15 @@ Structure class for LDAP/LDAPS URIs.
 
 ### \[Function] `url-decode`
 
-Decode a Percent-Encoded string.
+Decode a Percent-Encoded string or byte vector.
 
 ### \[Function] `url-decode-params`
 
-Decode a [form-urlencoded](http://tools.ietf.org/html/rfc1866#section-8.2.1) string and return an association list.
+Decode a [form-urlencoded](http://tools.ietf.org/html/rfc1866#section-8.2.1) string or byte vector and return an association list.
 
 ### \[Function] `url-encode`
 
-Encode a string into a Percent-Encoded string.
+Encode a string or a byte vector into a Percent-Encoded string.
 
 ### \[Function] `url-encode-params`
 
