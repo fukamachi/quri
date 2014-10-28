@@ -20,7 +20,7 @@
            :parse-fragment))
 (in-package :quri.parser)
 
-(deftype simple-byte-vector () '(simple-array (unsigned-byte 8) (*)))
+(deftype simple-byte-vector (&optional (len '*)) `(simple-array (unsigned-byte 8) (,len)))
 
 (defun parse-uri (data &key (start 0) end)
   (etypecase data
