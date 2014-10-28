@@ -74,22 +74,22 @@
                   (or keyword
                       (intern (string-upcase (subseq data (the integer start) (the integer end))) :keyword)))
             (unless (= end parse-end)
-              (multiple-value-bind (data userinfo-start userinfo-end
+              (multiple-value-bind (parsed-data userinfo-start userinfo-end
                                     host-start host-end port-start port-end)
                   (parse-authority-string data :start end :end parse-end)
-                (declare (type string data)
-                         (type integer host-start host-end))
-                (when userinfo-start
-                  (setq userinfo (subseq data (the integer userinfo-start) (the integer userinfo-end))))
-                (unless (= host-start host-end)
-                  (setq host (subseq data host-start host-end)))
-                (when port-start
-                  (handler-case
-                      (setq port
-                            (parse-integer data :start (the integer port-start) :end (the integer port-end)))
-                    (error ()
-                      (error 'uri-invalid-port))))
-                (parse-from-path data (or port-end host-end))))))))
+                (when parsed-data
+                  (locally (declare (type integer host-start host-end))
+                    (when userinfo-start
+                      (setq userinfo (subseq (the string data) (the integer userinfo-start) (the integer userinfo-end))))
+                    (unless (= host-start host-end)
+                      (setq host (subseq data host-start host-end)))
+                    (when port-start
+                      (handler-case
+                          (setq port
+                                (parse-integer data :start (the integer port-start) :end (the integer port-end)))
+                        (error ()
+                          (error 'uri-invalid-port))))))
+                (parse-from-path data (or port-end host-end (1+ end)))))))))
     (values scheme userinfo host port path query fragment)))
 
 (defun parse-uri-byte-vector (data &key (start 0) end)
@@ -153,19 +153,20 @@
                                          code)))))
                           (intern data-str :keyword))))
               (unless (= end parse-end)
-                (multiple-value-bind (data userinfo-start userinfo-end
+                (multiple-value-bind (parsed-data userinfo-start userinfo-end
                                       host-start host-end port-start port-end)
                     (parse-authority-byte-vector data :start end :end parse-end)
-                  (declare (type simple-byte-vector data)
-                           (type integer host-start host-end))
-                  (when userinfo-start
-                    (setq userinfo (subseq* data (the integer userinfo-start) (the integer userinfo-end))))
-                  (unless (= host-start host-end)
-                    (setq host (subseq* data host-start host-end)))
-                  (when port-start
-                    (setq port
-                          (parse-integer-from-bv data :start port-start :end port-end)))
-                  (parse-from-path data (or port-end host-end)))))))))
+                  (when parsed-data
+                    (locally (declare (type simple-byte-vector data)
+                                      (type integer host-start host-end))
+                      (when userinfo-start
+                        (setq userinfo (subseq* data (the integer userinfo-start) (the integer userinfo-end))))
+                      (unless (= host-start host-end)
+                        (setq host (subseq* data host-start host-end)))
+                      (when port-start
+                        (setq port
+                              (parse-integer-from-bv data :start port-start :end port-end)))))
+                  (parse-from-path data (or port-end host-end (1+ end))))))))))
     (values scheme userinfo host port path query fragment)))
 
 (defmacro defun-with-array-parsing (name (char p data start end &rest other-args) &body body)
@@ -326,6 +327,8 @@
        (redo)))
 
   (:eof
+   (unless authority-mark
+     (return-from parse-authority))
    (if colon-mark
        (setq host-start authority-mark
              host-end colon-mark
