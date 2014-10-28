@@ -68,8 +68,8 @@
 
            :uri-error
            :uri-malformed-string
-           :uri-invalid-scheme
            :uri-invalid-port
+           :url-decoding-error
            :uri-malformed-urlencoded-string))
 (in-package :quri)
 

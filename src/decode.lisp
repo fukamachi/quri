@@ -27,7 +27,7 @@
        (- code #.(- (char-code #\A) 10)))
       ((<= #.(char-code #\a) code #.(char-code #\f))
        (- code #.(- (char-code #\a) 10)))
-      (T (error 'uri-malformed-urlencoded-string)))))
+      (T (error 'url-decoding-error)))))
 
 (defun url-decode (data &key
                           (encoding babel-encodings:*default-character-encoding*)
@@ -69,7 +69,11 @@
          (write-to-buffer
           (+ parsing-encoded-part
              (hexdigit-to-integer char)))
-         (goto parsing))))
+         (goto parsing))
+
+        (:eof
+         (when parsing-encoded-part
+           (error 'url-decoding-error)))))
     (babel:octets-to-string buffer :end i :encoding encoding)))
 
 (defun url-decode-params (data &key
