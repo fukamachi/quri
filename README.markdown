@@ -11,7 +11,7 @@
 - Doesn't encode/decode URL implicitly.
 - Supports userinfo. (ex. `git` in `git@github.com`)
 - Supports IPv6 hostname. (ex. `ldap://[2001:db8::7]/`)
-- Supports byte vectors for input.
+- Allows byte vectors as input.
 - URL encoding/decoding utilities.
 
 ## Usage
