@@ -128,15 +128,17 @@ $ git clone https://github.com/fukamachi/quri
 
 ## Benchmark
 
+### Parsing URI
+
 - Parsing a URI string 100,000 times.
 
 |  QURI  |  PURI  |
 |--------|--------|
 | 0.064s | 0.423s |
 
-QURI is **6.6 times faster** than PURI.
+QURI is **6.6 times faster** than PURI for URI parsing.
 
-### QURI
+#### QURI
 
 ```common-lisp
 (time
@@ -153,7 +155,7 @@ Evaluation took:
   28,807,728 bytes consed
 ```
 
-### PURI
+#### PURI
 
 ```common-lisp
 (time
@@ -169,6 +171,131 @@ Evaluation took:
   100.47% CPU
   1,266,663,894 processor cycles
   64,001,408 bytes consed
+```
+
+### URL decoding
+
+- Decoding a URL-encoded string 100,000 times.
+
+|  QURI  | Hunchentoot | do-urlencode |
+|--------|-------------|--------------|
+| 0.029s |    0.089s   |    0.634s    |
+
+QURI is **3 times faster** than Hunchentoot, and **21.8 times faster** than do-urlencode.
+
+#### QURI
+
+```common-lisp
+(time
+  (dotimes (i 100000)
+    (quri:url-decode "foo%E3%81%82")))
+```
+
+```
+Evaluation took:
+  0.029 seconds of real time
+  0.028683 seconds of total run time (0.027934 user, 0.000749 system)
+  100.00% CPU
+  85,421,676 processor cycles
+  7,993,456 bytes consed
+```
+
+#### Hunchentoot
+
+```common-lisp
+(time
+  (dotimes (i 100000)
+    (hunchentoot:url-decode "foo%E3%81%82")))
+```
+
+```
+Evaluation took:
+  0.089 seconds of real time
+  0.088946 seconds of total run time (0.087632 user, 0.001314 system)
+  100.00% CPU
+  265,341,714 processor cycles
+  17,611,968 bytes consed
+```
+
+#### do-urlencode
+
+```common-lisp
+(time
+  (dotimes (i 100000)
+    (do-urlencode:urldecode "foo%E3%81%82")))
+```
+
+```
+Evaluation took:
+  0.634 seconds of real time
+  0.637236 seconds of total run time (0.632224 user, 0.005012 system)
+  [ Run times consist of 0.023 seconds GC time, and 0.615 seconds non-GC time. ]
+  100.47% CPU
+  1,897,304,959 processor cycles
+  153,606,064 bytes consed
+```
+
+### URL encoding
+
+- URL-encoding a string 100,000 times.
+
+|  QURI  | Hunchentoot | do-urlencode |
+|--------|-------------|--------------|
+| 0.074s |    0.282s   |    0.317s    |
+
+QURI is **3.8 times faster** than Hunchentoot, and **4.2 times faster** than do-urlencode.
+
+#### QURI
+
+```common-lisp
+(time
+  (dotimes (i 100000)
+    (quri:url-encode "fooあ")))
+```
+
+```
+Evaluation took:
+  0.074 seconds of real time
+  0.074284 seconds of total run time (0.072908 user, 0.001376 system)
+  100.00% CPU
+  221,267,517 processor cycles
+  31,993,520 bytes consed
+```
+
+#### Hunchentoot
+
+```common-lisp
+(time
+  (dotimes (i 100000)
+    (hunchentoot:url-encode "fooあ")))
+```
+
+```
+Evaluation took:
+  0.282 seconds of real time
+  0.284922 seconds of total run time (0.280063 user, 0.004859 system)
+  [ Run times consist of 0.034 seconds GC time, and 0.251 seconds non-GC time. ]
+  101.06% CPU
+  845,204,850 processor cycles
+  214,382,672 bytes consed
+```
+
+#### do-urlencode
+
+```common-lisp
+(time
+  (dotimes (i 100000)
+    (do-urlencode:urlencode "fooあ")))
+```
+
+```
+Evaluation took:
+  0.317 seconds of real time
+  0.319419 seconds of total run time (0.314339 user, 0.005080 system)
+  [ Run times consist of 0.026 seconds GC time, and 0.294 seconds non-GC time. ]
+  100.63% CPU
+  946,704,912 processor cycles
+  219,186,768 bytes consed
 ```
 
 ## Author
