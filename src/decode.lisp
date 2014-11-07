@@ -69,6 +69,7 @@
          (write-to-buffer
           (+ parsing-encoded-part
              (hexdigit-to-integer char)))
+         (setq parsing-encoded-part nil)
          (goto parsing))
 
         (:eof
