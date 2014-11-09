@@ -98,7 +98,7 @@
 (defun render-uri (uri &optional stream)
   (if (uri-ftp-p uri)
       (format stream
-              "~:[~;~:*~(~A~):~]~:[~;~:*//~A~]~:[~;~:*~A~]~:[~;~:*;type=~A~]~:[~;~:*?~A~]~:[~;~:*#~A~]"
+              "~:[~;~:*~(~A~):~]~:[~;~:*//~(~A~)~]~:[~;~:*~A~]~:[~;~:*;type=~A~]~:[~;~:*?~A~]~:[~;~:*#~A~]"
               (uri-scheme uri)
               (uri-authority uri)
               (uri-path uri)
@@ -106,7 +106,7 @@
               (uri-query uri)
               (uri-fragment uri))
       (format stream
-              "~:[~;~:*~(~A~):~]~:[~;~:*//~A~]~:[~;~:*~A~]~:[~;~:*?~A~]~:[~;~:*#~A~]"
+              "~:[~;~:*~(~A~):~]~:[~;~:*//~(~A~)~]~:[~;~:*~A~]~:[~;~:*?~A~]~:[~;~:*#~A~]"
               (uri-scheme uri)
               (uri-authority uri)
               (uri-path uri)
@@ -121,7 +121,7 @@
          (equal (uri-path uri1)      (uri-path uri2))
          (equal (uri-query uri1)     (uri-query uri2))
          (equal (uri-fragment uri1)  (uri-fragment uri2))
-         (equal (uri-authority uri1) (uri-authority uri2))
+         (equalp (uri-authority uri1) (uri-authority uri2))
          (or (not (uri-ftp-p uri1))
              (eql (uri-ftp-typecode uri1) (uri-ftp-typecode uri2))))))
 
