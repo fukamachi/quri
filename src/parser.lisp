@@ -191,7 +191,7 @@
            (declare (ignore ,args))
            (let ((,type (cond
                           ((constantp ,data) (type-of ,data))
-                          ((symbolp ,data) (assoc 'type (nth-value 2 (variable-information ,data ,env)))))))
+                          ((symbolp ,data) (cdr (assoc 'type (nth-value 2 (variable-information ,data ,env))))))))
              (cond
                ((null ,type) ,form)
                ((subtypep ,type 'simple-string) `(,',fn-for-string ,@(cdr ,form)))
@@ -431,7 +431,7 @@
   (declare (ignore start end))
   (let ((type (cond
                 ((constantp data) (type-of data))
-                ((symbolp data) (assoc 'type (nth-value 2 (variable-information data env)))))))
+                ((symbolp data) (cdr (assoc 'type (nth-value 2 (variable-information data env))))))))
     (cond
       ((null type) form)
       ((subtypep type 'simple-string) `(parse-query-string ,@(cdr form)))
@@ -464,7 +464,7 @@
   (declare (ignore start end))
   (let ((type (cond
                 ((constantp data) (type-of data))
-                ((symbolp data) (assoc 'type (nth-value 2 (variable-information data env)))))))
+                ((symbolp data) (cdr (assoc 'type (nth-value 2 (variable-information data env))))))))
     (cond
       ((null type) form)
       ((subtypep type 'simple-string) `(parse-fragment-string ,@(cdr form)))
