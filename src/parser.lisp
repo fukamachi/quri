@@ -32,7 +32,7 @@
   (declare (ignore start end))
   (let ((type (cond
                 ((constantp data) (type-of data))
-                ((symbolp data) (assoc 'type (nth-value 2 (variable-information data env)))))))
+                ((symbolp data) (cdr (assoc 'type (nth-value 2 (variable-information data env))))))))
     (cond
       ((null type) form)
       ((subtypep type 'simple-string) `(parse-uri-string ,@(cdr form)))
