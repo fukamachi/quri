@@ -44,7 +44,8 @@
                              #p"README.markdown"
                              (or *load-pathname* *compile-file-pathname*))
                             :if-does-not-exist nil
-                            :direction :input)
+                            :direction :input
+                            :external-format :utf-8)
       (when stream
         (let ((seq (make-array (file-length stream)
                                :element-type 'character
