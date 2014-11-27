@@ -25,15 +25,21 @@
             (aref res 1) (aref +hexdigit-char+ remainder)))
     res))
 
-(declaim (type (simple-array string (94)) +reserved+))
-(defvar +reserved+
-  (let ((ary (make-array 94 :element-type 'string
-                         :initial-element "")))
-    (map nil
-         (lambda (char)
-           (setf (aref ary (char-code char))
-                 (integer-to-hexdigit (char-code char))))
-         "!*'();:@&=+$,/?#[] ")
+(defun unreservedp (byte)
+  (declare (type (unsigned-byte 8) byte)
+           (optimize (speed 3) (safety 0)))
+  (or (< (char-code #\A) byte (char-code #\Z))
+      (< (char-code #\a) byte (char-code #\z))
+      (< (char-code #\0) byte (char-code #\9))
+      #.`(or ,@(loop for char across "-._~"
+                     collect `(= byte ,(char-code char))))))
+
+(declaim (type (simple-array string (97)) +byte-to-string+))
+(defvar +byte-to-string+
+  (let ((ary (make-array 97 :element-type 'string :initial-element "")))
+    (loop for i from 0 to 96
+          unless (unreservedp i)
+            do (setf (aref ary i) (integer-to-hexdigit i)))
     ary))
 
 (defun url-encode (data &key
@@ -59,16 +65,17 @@
          (setf (aref res i) #\+)
          (incf i))
         ((< byte #.(char-code #\a))
-         (let ((reserved (aref +reserved+ byte)))
-           (if (zerop (length reserved))
-               (progn
-                 (setf (aref res i) (code-char byte))
-                 (incf i))
-               (progn
-                 (setf (aref res i) #\%)
-                 (incf i)
-                 (replace res reserved :start1 i)
-                 (incf i 2)))))
+         (locally (declare (optimize (speed 3) (safety 0)))
+           (let ((converted (aref +byte-to-string+ byte)))
+             (if (zerop (length converted))
+                 (progn
+                   (setf (aref res i) (code-char byte))
+                   (incf i))
+                 (progn
+                   (setf (aref res i) #\%)
+                   (incf i)
+                   (replace res converted :start1 i)
+                   (incf i 2))))))
         ((< byte 128)
          (setf (aref res i) (code-char byte))
          (incf i))
