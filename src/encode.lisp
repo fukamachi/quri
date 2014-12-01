@@ -28,9 +28,9 @@
 (defun unreservedp (byte)
   (declare (type (unsigned-byte 8) byte)
            (optimize (speed 3) (safety 0)))
-  (or (< (char-code #\A) byte (char-code #\Z))
-      (< (char-code #\a) byte (char-code #\z))
-      (< (char-code #\0) byte (char-code #\9))
+  (or (<= (char-code #\A) byte (char-code #\Z))
+      (<= (char-code #\a) byte (char-code #\z))
+      (<= (char-code #\0) byte (char-code #\9))
       #.`(or ,@(loop for char across "-._~"
                      collect `(= byte ,(char-code char))))))
 
