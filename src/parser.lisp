@@ -3,12 +3,11 @@
   (:use :cl
         :quri.error
         :quri.util)
+  #+(or sbcl openmcl cmu allegro)
   (:import-from #+sbcl :sb-cltl2
                 #+openmcl :ccl
                 #+cmu :ext
                 #+allegro :sys
-                #+ecl :si
-                #+abcl :lisp
                 :variable-information)
   (:import-from :alexandria
                 :with-gensyms)
@@ -27,7 +26,7 @@
     (simple-string (parse-uri-string data :start start :end end))
     (simple-byte-vector (parse-uri-byte-vector data :start start :end end))))
 
-#+(or sbcl openmcl cmu allegro ecl abcl)
+#+(or sbcl openmcl cmu allegro)
 (define-compiler-macro parse-uri (&whole form &environment env data &key start end)
   (declare (ignore start end))
   (let ((type (cond
@@ -186,7 +185,7 @@
              (simple-string (apply ',(intern (format nil "~A-~A" name :string)) data ,args))
              (simple-byte-vector (apply ',(intern (format nil "~A-~A" name :byte-vector)) data ,args))))
 
-         #+(or sbcl openmcl cmu allegro ecl abcl)
+         #+(or sbcl openmcl cmu allegro)
          (define-compiler-macro ,name (&whole ,form &environment ,env ,data &rest ,args)
            (declare (ignore ,args))
            (let ((,type (cond
@@ -426,7 +425,7 @@
     (simple-byte-vector
      (parse-query-byte-vector data :start start :end end))))
 
-#+(or sbcl openmcl cmu allegro ecl abcl)
+#+(or sbcl openmcl cmu allegro)
 (define-compiler-macro parse-query (&whole form &environment env data &key start end)
   (declare (ignore start end))
   (let ((type (cond
@@ -459,7 +458,7 @@
     (string (parse-fragment-string data :start start :end end))
     (simple-byte-vector (parse-fragment-byte-vector data :start start :end end))))
 
-#+(or sbcl openmcl cmu allegro ecl abcl)
+#+(or sbcl openmcl cmu allegro)
 (define-compiler-macro parse-fragment (&whole form &environment env data &key start end)
   (declare (ignore start end))
   (let ((type (cond
