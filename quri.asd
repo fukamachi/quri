@@ -45,7 +45,7 @@
                              (or *load-pathname* *compile-file-pathname*))
                             :if-does-not-exist nil
                             :direction :input
-                            :external-format #+clisp charset:utf-8 #-clisp :utf8)
+                            :external-format #+clisp charset:utf-8 #-clisp :utf-8)
       (when stream
         (let ((seq (make-array (file-length stream)
                                :element-type 'character
