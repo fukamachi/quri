@@ -77,6 +77,20 @@
            (error 'url-decoding-error)))))
     (babel:octets-to-string buffer :end i :encoding encoding)))
 
+;; If malformed data comes in (format a==b) this dies, and that causes the web server to
+;; run out of threads - wouldn't a more sensible default be to attempt a clean up vs error?
+;; especially as it seems like clack/caveman2 has no way for the implentor to touch the GET/POST
+;; data before it collides with this error to pre-emptively clean it up
+(defun clean-up-malformed-data (data &key (delimiter #\&))
+  "Some data sent in like a==b or a&&b will wreck this, so clean it up"
+  (let ((last-c nil))
+    (format nil "~{~a~}"
+            (remove nil (loop for c across data
+                           collect (unless (and (equal last-c c)
+                                                (member c (list #\= delimiter)))
+                                     (setf last-c c)
+                                     c))))))
+
 (defun url-decode-params (data &key
                                  (delimiter #\&)
                                  (encoding babel-encodings:*default-character-encoding*)
@@ -88,7 +102,8 @@
            (optimize (speed 3) (safety 2)))
   (let ((end (or end (length data)))
         (start-mark nil)
-        (=-mark nil))
+        (=-mark nil)
+        (data (clean-up-malformed-data data))) ;; Clean up malformed data to avoid blocking errors
     (declare (type integer end))
     (collecting
       (flet ((collect-pair (p)
