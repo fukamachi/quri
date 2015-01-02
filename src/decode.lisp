@@ -83,14 +83,25 @@
 ;; data before it collides with this error to pre-emptively clean it up
 (defun clean-up-malformed-data (data &key (delimiter #\&))
   "Some data sent in like a==b or a&&b will wreck this, so clean it up"
-  (let ((last-c nil)
+  (let ((saw-equals nil)
+        (saw-delimiter nil)
+        (saw-safe t)
         (data (string-trim (list #\= delimiter) data)))
-    (format nil "~{~a~}"
-            (remove nil (loop for c across data
-                           collect (unless (and (equal last-c c)
-                                                (member c (list #\= delimiter)))
-                                     (setf last-c c)
-                                     c))))))
+    (format
+     nil "~{~a~}"
+     (remove nil (loop for c across data
+                    collect
+                      (cond ((equal delimiter c)
+                             (when (and saw-safe (not saw-delimiter))
+                               (setf saw-safe nil
+                                     saw-delimiter t) c))
+                            ((equal #\= c)
+                             (when (and (not saw-equals) saw-safe)
+                               (setf saw-safe nil
+                                     saw-equals t) c))
+                            (t (setf saw-safe t
+                                     saw-delimiter nil
+                                     saw-equals nil) c)))))))
 
 (defun url-decode-params (data &key
                                  (delimiter #\&)
