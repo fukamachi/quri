@@ -77,6 +77,33 @@
            (error 'url-decoding-error)))))
     (babel:octets-to-string buffer :end i :encoding encoding)))
 
+;; If malformed data comes in (format a==b) this dies, and that causes the web server to
+;; run out of threads - wouldn't a more sensible default be to attempt a clean up vs error?
+;; especially as it seems like clack/caveman2 has no way for the implentor to touch the GET/POST
+;; data before it collides with this error to pre-emptively clean it up
+(defun clean-up-malformed-data (data &key (delimiter #\&))
+  "Some data sent in like a==b or a&&b will wreck this, so clean it up"
+  (unless (equal #\= delimiter) ;; Just testing if this is an issue
+    (let ((saw-equals nil)
+          (saw-delimiter nil)
+          (saw-safe t)
+          (data (string-trim (list #\= delimiter) data)))
+      (format
+       nil "~{~a~}"
+       (remove nil (loop for c across data
+                      collect
+                        (cond ((equal delimiter c)
+                               (when (and saw-safe (not saw-delimiter))
+                                 (setf saw-safe nil
+                                       saw-delimiter t) c))
+                              ((equal #\= c)
+                               (when (and (not saw-equals) saw-safe)
+                                 (setf saw-safe nil
+                                       saw-equals t) c))
+                              (t (setf saw-safe t
+                                       saw-delimiter nil
+                                       saw-equals nil) c))))))))
+
 (defun url-decode-params (data &key
                                  (delimiter #\&)
                                  (encoding babel-encodings:*default-character-encoding*)
@@ -86,9 +113,10 @@
            (type integer start)
            (type character delimiter)
            (optimize (speed 3) (safety 2)))
-  (let ((end (or end (length data)))
-        (start-mark nil)
-        (=-mark nil))
+  (let* ((data (clean-up-malformed-data data :delimiter delimiter)) ;; Clean up malformed data to avoid blocking errors
+         (end (or end (length data)))
+         (start-mark nil)
+         (=-mark nil))
     (declare (type integer end))
     (collecting
       (flet ((collect-pair (p)
