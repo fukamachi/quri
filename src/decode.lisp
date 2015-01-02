@@ -103,7 +103,7 @@
   (let ((end (or end (length data)))
         (start-mark nil)
         (=-mark nil)
-        (data (clean-up-malformed-data data))) ;; Clean up malformed data to avoid blocking errors
+        (data (clean-up-malformed-data data :delimiter delimiter))) ;; Clean up malformed data to avoid blocking errors
     (declare (type integer end))
     (collecting
       (flet ((collect-pair (p)
