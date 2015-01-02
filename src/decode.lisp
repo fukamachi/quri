@@ -83,7 +83,7 @@
 ;; data before it collides with this error to pre-emptively clean it up
 (defun clean-up-malformed-data (data &key (delimiter #\&))
   "Some data sent in like a==b or a&&b will wreck this, so clean it up"
-  (let ((last-c nil))
+  (let ((last-c (char data 0))) ;; Checks for a string starting with = or delimiter
     (format nil "~{~a~}"
             (remove nil (loop for c across data
                            collect (unless (and (equal last-c c)
@@ -100,10 +100,10 @@
            (type integer start)
            (type character delimiter)
            (optimize (speed 3) (safety 2)))
-  (let ((end (or end (length data)))
-        (start-mark nil)
-        (=-mark nil)
-        (data (clean-up-malformed-data data :delimiter delimiter))) ;; Clean up malformed data to avoid blocking errors
+  (let* ((data (clean-up-malformed-data data :delimiter delimiter)) ;; Clean up malformed data to avoid blocking errors
+         (end (or end (length data)))
+         (start-mark nil)
+         (=-mark nil))
     (declare (type integer end))
     (collecting
       (flet ((collect-pair (p)
