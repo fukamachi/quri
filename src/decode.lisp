@@ -81,7 +81,8 @@
                                  (delimiter #\&)
                                  (encoding babel-encodings:*default-character-encoding*)
                                  (start 0)
-                                 end)
+                                 end
+                                 (lenient nil))
   (declare (type (or string (simple-array (unsigned-byte 8) (*))) data)
            (type integer start)
            (type character delimiter)
@@ -102,10 +103,17 @@
         (with-array-parsing (char p data start end (and (not (stringp data))
                                                         #'code-char))
           (start
-           (when (or (char= char #\=)
-                     (char= char delimiter))
-             (error 'uri-malformed-urlencoded-string))
            (setq start-mark p)
+           (if lenient
+               (cond
+                 ((char= char #\=)
+                  (setq =-mark p)
+                  (goto parsing-value))
+                 ((char= char delimiter)
+                  (redo)))
+               (when (or (char= char #\=)
+                         (char= char delimiter))
+                 (error 'uri-malformed-urlencoded-string)))
            (gonext))
 
           (parsing-field
@@ -122,7 +130,8 @@
           (parsing-value
            (cond
              ((char= char #\=)
-              (error 'uri-malformed-urlencoded-string))
+              (unless lenient
+                (error 'uri-malformed-urlencoded-string)))
              ((char= char delimiter)
               (collect-pair p)
               (goto start)))
