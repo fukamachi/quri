@@ -16,6 +16,7 @@
   :components ((:module "t"
                 :components
                 ((:test-file "quri")
+                 (:test-file "decode")
                  (:file "benchmark"))))
 
   :defsystem-depends-on (:prove-asdf)
