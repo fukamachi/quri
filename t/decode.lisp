@@ -5,7 +5,7 @@
         :prove))
 (in-package :quri-test.decode)
 
-(plan 4)
+(plan 6)
 
 (is (url-decode-params "a=b&c=d")
     '(("a" . "b") ("c" . "d"))
