@@ -93,12 +93,26 @@
     (declare (type integer end))
     (collecting
       (flet ((collect-pair (p)
-               (collect (cons (url-decode data :encoding encoding :start start-mark :end =-mark)
-                              (url-decode data :encoding encoding :start (1+ =-mark) :end p)))
+               (tagbody
+                  (handler-bind ((url-decoding-error
+                                   (lambda (error)
+                                     (declare (ignore error))
+                                     (when lenient
+                                       (go continue)))))
+                    (collect (cons (url-decode data :encoding encoding :start start-mark :end =-mark)
+                                   (url-decode data :encoding encoding :start (1+ =-mark) :end p))))
+                continue)
                (setq start-mark nil
                      =-mark nil))
              (collect-field (p)
-               (collect (cons (url-decode data :encoding encoding :start start-mark :end p) nil))
+               (tagbody
+                  (handler-bind ((url-decoding-error
+                                   (lambda (error)
+                                     (declare (ignore error))
+                                     (when lenient
+                                       (go continue)))))
+                    (collect (cons (url-decode data :encoding encoding :start start-mark :end p) nil)))
+                continue)
                (setq start-mark nil)))
         (with-array-parsing (char p data start end (and (not (stringp data))
                                                         #'code-char))

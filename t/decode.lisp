@@ -23,4 +23,11 @@
     '(("a" . "b=c"))
     ":lenient t")
 
+(is-error (url-decode-params "a=%!@#&b=1")
+          'quri:url-decoding-error
+          "Raise a decoding error")
+
+(is (url-decode-params "a=%!@#&b=1" :lenient t)
+    '(("b" . "1")))
+
 (finalize)
