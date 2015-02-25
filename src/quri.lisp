@@ -74,26 +74,28 @@
 (in-package :quri)
 
 (defun uri (data &key (start 0) end)
-  (multiple-value-bind (scheme userinfo host port path query fragment)
-      (parse-uri data :start start :end end)
-    (apply (cond
-             ((string= scheme "http")  #'make-uri-http)
-             ((string= scheme "https") #'make-uri-https)
-             ((string= scheme "ldap")  #'make-uri-ldap)
-             ((string= scheme "ldaps") #'make-uri-ldaps)
-             ((string= scheme "ftp")   #'make-uri-ftp)
-             ((string= scheme "urn")   #'make-urn)
-             (T                        #'make-uri))
+  (if (uri-p data)
+      data
+      (multiple-value-bind (scheme userinfo host port path query fragment)
+          (parse-uri data :start start :end end)
+        (apply (cond
+                 ((string= scheme "http")  #'make-uri-http)
+                 ((string= scheme "https") #'make-uri-https)
+                 ((string= scheme "ldap")  #'make-uri-ldap)
+                 ((string= scheme "ldaps") #'make-uri-ldaps)
+                 ((string= scheme "ftp")   #'make-uri-ftp)
+                 ((string= scheme "urn")   #'make-urn)
+                 (T                        #'make-uri))
 
-           :scheme scheme
-           :userinfo userinfo
-           :host host
-           :path path
-           :query query
-           :fragment fragment
+               :scheme scheme
+               :userinfo userinfo
+               :host host
+               :path path
+               :query query
+               :fragment fragment
 
-           (and port
-                `(:port ,port)))))
+               (and port
+                    `(:port ,port))))))
 
 (defun render-uri (uri &optional stream)
   (if (uri-ftp-p uri)
