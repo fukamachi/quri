@@ -34,6 +34,14 @@
   (ok (ipv6-addr-p "2001:db8::9abc"))
   (ok (ipv6-addr-p "::1")))
 
+(subtest "ip-addr="
+  (is (ip-addr= "127.0.0.1" "127.0.0.1") t)
+  (is (ip-addr= "127.0.0.1" "127.0.0.2") nil)
+  (is (ip-addr= "127.0.0.1" "localhost") nil)
+  (is (ip-addr= "::1" "0:0:0:0:0:0:0:1") t)
+  (is (ip-addr= "[::1]" "0:0:0:0:0:0:0:1") t)
+  (is (ip-addr= "[::1]" "0:0:0:0:0:0:0:2") nil))
+
 (subtest "cookie-domain-p"
   (is (cookie-domain-p "com" "com") nil)
   (is (cookie-domain-p "com" "example.com") nil)
