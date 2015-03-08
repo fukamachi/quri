@@ -7,9 +7,12 @@
                 :parse-domain)
   (:import-from :alexandria
                 :xor)
+  (:import-from :split-sequence
+                :split-sequence)
   (:export :ipv4-addr-p
            :ipv6-addr-p
            :ip-addr-p
+           :ip-addr=
            :uri-tld
            :uri-domain))
 (in-package :quri.domain)
@@ -70,6 +73,13 @@
             (return nil))
           (setq start (1+ pos)))))))
 
+(defun trim-brackets (host)
+  (if (char= (aref host 0) #\[)
+      (if (char= (aref host (1- (length host))) #\])
+          (subseq host 1 (1- (length host)))
+          nil)
+      host))
+
 (defun ipv6-addr-p (host)
   (declare (optimize (speed 3) (safety 2))
            #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note))
@@ -77,13 +87,7 @@
   (when (= (length host) 0)
     (return-from ipv6-addr-p nil))
 
-  (labels ((trim-brackets (host)
-             (if (char= (aref host 0) #\[)
-                 (if (char= (aref host (1- (length host))) #\])
-                     (subseq host 1 (1- (length host)))
-                     nil)
-                 host))
-           (read-section (string start &optional read-colons)
+  (labels ((read-section (string start &optional read-colons)
              (declare (type string string)
                       (type fixnum start))
              (when (<= (length string) start)
@@ -144,3 +148,26 @@
 (defun ip-addr-p (host)
   (or (ipv4-addr-p host)
       (ipv6-addr-p host)))
+
+(defun ip-addr= (ip1 ip2)
+  (flet ((parse-ipv6 (ip)
+           (setq ip (trim-brackets ip))
+           (cond
+             ((char= (aref ip 0) #\:)
+              (setq ip (concatenate 'string "0" ip)))
+             ((char= (aref ip (1- (length ip))) #\:)
+              (setq ip (concatenate 'string ip "0"))))
+           (let* ((ip-parsed (split-sequence #\: ip))
+                  (len (length ip-parsed)))
+             (loop for section in ip-parsed
+                   if (string= section "")
+                     append (make-list (- 9 len) :initial-element 0)
+                   else
+                     collect (parse-integer section :radix 16)))))
+    (cond
+      ((ipv4-addr-p ip1)
+       (string= ip1 ip2))
+      ((ipv6-addr-p ip1)
+       (and (ipv6-addr-p ip2)
+            (equal (parse-ipv6 ip1)
+                   (parse-ipv6 ip2)))))))

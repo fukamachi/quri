@@ -11,7 +11,8 @@
                 :uri-domain
                 :ipv4-addr-p
                 :ipv6-addr-p
-                :ip-addr-p)
+                :ip-addr-p
+                :ip-addr=)
   (:import-from :quri.parser
                 :parse-uri
                 :parse-scheme
@@ -49,6 +50,7 @@
            :ipv4-addr-p
            :ipv6-addr-p
            :ip-addr-p
+           :ip-addr=
 
            :urn
            :urn-p
