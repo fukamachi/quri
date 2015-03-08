@@ -12,7 +12,8 @@
                 :ipv4-addr-p
                 :ipv6-addr-p
                 :ip-addr-p
-                :ip-addr=)
+                :ip-addr=
+                :cookie-domain-p)
   (:import-from :quri.parser
                 :parse-uri
                 :parse-scheme
@@ -51,6 +52,7 @@
            :ipv6-addr-p
            :ip-addr-p
            :ip-addr=
+           :cookie-domain-p
 
            :urn
            :urn-p

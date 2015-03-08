@@ -6,7 +6,10 @@
   (:import-from :quri.etld
                 :parse-domain)
   (:import-from :alexandria
-                :xor)
+                :xor
+                :ends-with-subseq
+                :length=
+                :when-let)
   (:import-from :split-sequence
                 :split-sequence)
   (:export :ipv4-addr-p
@@ -14,7 +17,8 @@
            :ip-addr-p
            :ip-addr=
            :uri-tld
-           :uri-domain))
+           :uri-domain
+           :cookie-domain-p))
 (in-package :quri.domain)
 
 (defun uri-tld (uri)
@@ -171,3 +175,17 @@
        (and (ipv6-addr-p ip2)
             (equal (parse-ipv6 ip1)
                    (parse-ipv6 ip2)))))))
+
+(defun cookie-domain-p (domain cookie-domain)
+  (if (ip-addr-p domain)
+      (ip-addr= domain cookie-domain)
+      (when-let (registered-domain (parse-domain domain))
+        (cond
+          ((length= registered-domain cookie-domain)
+           (string= registered-domain cookie-domain))
+          ((length= domain cookie-domain)
+           (string= domain cookie-domain))
+          (t (and (ends-with-subseq domain cookie-domain)
+                  (char= #\.
+                         (aref cookie-domain (- (length cookie-domain)
+                                                (length registered-domain))))))))))

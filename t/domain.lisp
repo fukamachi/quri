@@ -34,4 +34,49 @@
   (ok (ipv6-addr-p "2001:db8::9abc"))
   (ok (ipv6-addr-p "::1")))
 
+(subtest "cookie-domain-p"
+  (is (cookie-domain-p "com" "com") nil)
+  (is (cookie-domain-p "com" "example.com") nil)
+  (is (cookie-domain-p "com" "foo.example.com") nil)
+  (is (cookie-domain-p "com" "bar.foo.example.com") nil)
+
+  (is (cookie-domain-p "example.com" "com") nil)
+  (is (cookie-domain-p "example.com" "example.com") t)
+  (is (cookie-domain-p "example.com" "foo.example.com") nil)
+  (is (cookie-domain-p "example.com" "bar.foo.example.com") nil)
+
+  (is (cookie-domain-p "foo.example.com" "com") nil)
+  (is (cookie-domain-p "foo.example.com" "example.com") t)
+  (is (cookie-domain-p "foo.example.com" "foo.example.com") t)
+  (is (cookie-domain-p "foo.example.com" "bar.foo.example.com") nil)
+
+  (is (cookie-domain-p "b.sapporo.jp" "jp") nil)
+  (is (cookie-domain-p "b.sapporo.jp" "sapporo.jp") nil)
+  (is (cookie-domain-p "b.sapporo.jp" "b.sapporo.jp") nil)
+  (is (cookie-domain-p "b.sapporo.jp" "a.b.sapporo.jp") nil)
+
+  (is (cookie-domain-p "b.c.sapporo.jp" "jp") nil)
+  (is (cookie-domain-p "b.c.sapporo.jp" "sapporo.jp") nil)
+  (is (cookie-domain-p "b.c.sapporo.jp" "c.sapporo.jp") nil)
+  (is (cookie-domain-p "b.c.sapporo.jp" "b.c.sapporo.jp") t)
+  (is (cookie-domain-p "b.c.sapporo.jp" "a.b.c.sapporo.jp") nil)
+
+  (is (cookie-domain-p "b.c.d.sapporo.jp" "jp") nil)
+  (is (cookie-domain-p "b.c.d.sapporo.jp" "sapporo.jp") nil)
+  (is (cookie-domain-p "b.c.d.sapporo.jp" "d.sapporo.jp") nil)
+  (is (cookie-domain-p "b.c.d.sapporo.jp" "c.d.sapporo.jp") t)
+  (is (cookie-domain-p "b.c.d.sapporo.jp" "b.c.d.sapporo.jp") t)
+  (is (cookie-domain-p "b.c.d.sapporo.jp" "a.b.c.d.sapporo.jp") nil)
+
+  (is (cookie-domain-p "city.sapporo.jp" "jp") nil)
+  (is (cookie-domain-p "city.sapporo.jp" "sapporo.jp") nil)
+  (is (cookie-domain-p "city.sapporo.jp" "city.sapporo.jp") t)
+  (is (cookie-domain-p "city.sapporo.jp" "a.city.sapporo.jp") nil)
+
+  (is (cookie-domain-p "b.city.sapporo.jp" "jp") nil)
+  (is (cookie-domain-p "b.city.sapporo.jp" "sapporo.jp") nil)
+  (is (cookie-domain-p "b.city.sapporo.jp" "city.sapporo.jp") t)
+  (is (cookie-domain-p "b.city.sapporo.jp" "b.city.sapporo.jp") t)
+  (is (cookie-domain-p "b.city.sapporo.jp" "a.b.city.sapporo.jp") nil))
+
 (finalize)
