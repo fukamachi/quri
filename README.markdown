@@ -35,6 +35,9 @@
 (uri-host *uri*)
 ;=> "www.ics.uci.edu"
 
+(uri-domain *uri*)
+;=> "uci.edu"
+
 (uri-path *uri*)
 ;=> "/pub/ietf/uri/"
 
