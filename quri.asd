@@ -23,7 +23,7 @@
                #+sbcl :sb-cltl2)
   :components ((:module "src"
                 :components
-                ((:file "quri" :depends-on ("uri" "uri-classes" "parser" "decode" "encode" "error"))
+                ((:file "quri" :depends-on ("uri" "uri-classes" "domain" "parser" "decode" "encode" "error"))
                  (:file "uri" :depends-on ("port"))
                  (:module "uri-classes"
                   :pathname "uri"
@@ -32,6 +32,8 @@
                   ((:file "ftp")
                    (:file "http")
                    (:file "ldap")))
+                 (:file "domain" :depends-on ("uri" "etld"))
+                 (:file "etld")
                  (:file "parser" :depends-on ("error" "util"))
                  (:file "decode" :depends-on ("error" "util"))
                  (:file "encode")

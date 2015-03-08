@@ -57,6 +57,8 @@ Structure class as a representation of URIs. The following methods are available
 - `uri-scheme`
 - `uri-userinfo`
 - `uri-host`
+- `uri-domain`
+- `uri-tld`
 - `uri-port`
 - `uri-path`
 - `uri-authority`

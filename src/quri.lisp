@@ -6,6 +6,12 @@
         :quri.uri.http
         :quri.uri.ldap
         :quri.error)
+  (:import-from :quri.domain
+                :uri-tld
+                :uri-domain
+                :ipv4-addr-p
+                :ipv6-addr-p
+                :ip-addr-p)
   (:import-from :quri.parser
                 :parse-uri
                 :parse-scheme
@@ -37,6 +43,12 @@
            :uri-query
            :uri-fragment
            :uri-authority
+
+           :uri-tld
+           :uri-domain
+           :ipv4-addr-p
+           :ipv6-addr-p
+           :ip-addr-p
 
            :urn
            :urn-p
