@@ -17,6 +17,8 @@
                 :components
                 ((:test-file "quri")
                  (:test-file "decode")
+                 (:test-file "domain")
+                 (:test-file "etld")
                  (:file "benchmark"))))
 
   :defsystem-depends-on (:prove-asdf)
