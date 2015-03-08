@@ -16,7 +16,8 @@
 
 (defun uri-tld (uri)
   (let ((host (uri-host uri)))
-    (when host
+    (when (and host
+               (not (ip-addr-p host)))
       (let ((pos (position #\. host :from-end t)))
         (if pos
             (subseq host (1+ pos))
@@ -24,7 +25,8 @@
 
 (defun uri-domain (uri)
   (let ((host (uri-host uri)))
-    (when host
+    (when (and host
+               (not (ip-addr-p host)))
       (parse-domain host))))
 
 (defun ipv4-addr-p (host)
