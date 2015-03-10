@@ -179,13 +179,17 @@
 (defun cookie-domain-p (domain cookie-domain)
   (if (ip-addr-p domain)
       (ip-addr= domain cookie-domain)
-      (when-let (registered-domain (parse-domain domain))
-        (cond
-          ((length= registered-domain cookie-domain)
-           (string= registered-domain cookie-domain))
-          ((length= domain cookie-domain)
-           (string= domain cookie-domain))
-          (t (and (ends-with-subseq domain cookie-domain)
-                  (char= #\.
-                         (aref cookie-domain (- (length cookie-domain)
-                                                (length registered-domain))))))))))
+      (progn
+        ;; ignore the preceding "."
+        (when (char= (aref cookie-domain 0) #\.)
+          (setq cookie-domain (subseq cookie-domain 1)))
+        (when-let (registered-domain (parse-domain domain))
+          (cond
+            ((length= registered-domain cookie-domain)
+             (string= registered-domain cookie-domain))
+            ((length= domain cookie-domain)
+             (string= domain cookie-domain))
+            (t (and (ends-with-subseq domain cookie-domain)
+                    (char= #\.
+                           (aref cookie-domain (- (length cookie-domain)
+                                                  (length registered-domain)))))))))))
