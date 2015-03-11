@@ -177,6 +177,8 @@
                    (parse-ipv6 ip2)))))))
 
 (defun cookie-domain-p (domain cookie-domain)
+  (unless cookie-domain
+    (return-from cookie-domain-p t))
   (if (ip-addr-p domain)
       (ip-addr= domain cookie-domain)
       (progn
