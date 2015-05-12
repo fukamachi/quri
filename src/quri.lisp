@@ -5,7 +5,8 @@
         :quri.uri.ftp
         :quri.uri.http
         :quri.uri.ldap
-        :quri.error)
+        :quri.error
+        :quri.copy)
   (:import-from :quri.domain
                 :uri-tld
                 :uri-domain
@@ -77,6 +78,9 @@
 
            :render-uri
 
+           :copy-uri
+           :merge-uris
+
            :url-decode
            :url-decode-params
            :url-encode
@@ -89,20 +93,13 @@
            :uri-malformed-urlencoded-string))
 (in-package :quri)
 
+
 (defun uri (data &key (start 0) end)
   (if (uri-p data)
       data
       (multiple-value-bind (scheme userinfo host port path query fragment)
           (parse-uri data :start start :end end)
-        (apply (cond
-                 ((string= scheme "http")  #'make-uri-http)
-                 ((string= scheme "https") #'make-uri-https)
-                 ((string= scheme "ldap")  #'make-uri-ldap)
-                 ((string= scheme "ldaps") #'make-uri-ldaps)
-                 ((string= scheme "ftp")   #'make-uri-ftp)
-                 ((string= scheme "urn")   #'make-urn)
-                 (T                        #'make-uri))
-
+        (apply (scheme-constructor scheme)
                :scheme scheme
                :userinfo userinfo
                :host host
