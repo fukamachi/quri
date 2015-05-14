@@ -31,7 +31,8 @@
                   :components
                   ((:file "ftp")
                    (:file "http")
-                   (:file "ldap")))
+                   (:file "ldap")
+                   (:file "file")))
                  (:file "domain" :depends-on ("uri" "etld"))
                  (:file "etld")
                  (:file "parser" :depends-on ("error" "util"))
