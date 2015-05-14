@@ -5,6 +5,7 @@
         :quri.uri.ftp
         :quri.uri.http
         :quri.uri.ldap
+        :quri.uri.file
         :quri.error)
   (:import-from :quri.domain
                 :uri-tld
@@ -75,6 +76,10 @@
            :uri-ldap-filter
            :uri-ldap-extensions
 
+           :uri-file
+           :uri-file-p
+           :uri-file-pathname
+
            :render-uri
 
            :url-decode
@@ -100,6 +105,7 @@
                  ((string= scheme "ldap")  #'make-uri-ldap)
                  ((string= scheme "ldaps") #'make-uri-ldaps)
                  ((string= scheme "ftp")   #'make-uri-ftp)
+                 ((string= scheme "file")  #'make-uri-file)
                  ((string= scheme "urn")   #'make-urn)
                  (T                        #'make-uri))
 
@@ -114,22 +120,29 @@
                     `(:port ,port))))))
 
 (defun render-uri (uri &optional stream)
-  (if (uri-ftp-p uri)
-      (format stream
-              "~:[~;~:*~(~A~):~]~:[~;~:*//~(~A~)~]~:[~;~:*~A~]~:[~;~:*;type=~A~]~:[~;~:*?~A~]~:[~;~:*#~A~]"
-              (uri-scheme uri)
-              (uri-authority uri)
-              (uri-path uri)
-              (uri-ftp-typecode uri)
-              (uri-query uri)
-              (uri-fragment uri))
-      (format stream
-              "~:[~;~:*~(~A~):~]~:[~;~:*//~(~A~)~]~:[~;~:*~A~]~:[~;~:*?~A~]~:[~;~:*#~A~]"
-              (uri-scheme uri)
-              (uri-authority uri)
-              (uri-path uri)
-              (uri-query uri)
-              (uri-fragment uri))))
+  (cond
+    ((uri-ftp-p uri)
+     (format stream
+             "~@[~(~A~):~]~@[//~(~A~)~]~@[~A~]~@[;type=~A~]~@[?~A~]~@[#~A~]"
+             (uri-scheme uri)
+             (uri-authority uri)
+             (uri-path uri)
+             (uri-ftp-typecode uri)
+             (uri-query uri)
+             (uri-fragment uri)))
+    ((uri-file-p uri)
+     (format stream
+             "~@[~(~A~)://~]~@[~(~a~)~]"
+             (uri-scheme uri)
+             (uri-path uri)))
+    (T
+     (format stream
+             "~@[~(~A~):~]~@[//~(~A~)~]~@[~A~]~@[?~A~]~@[#~A~]"
+             (uri-scheme uri)
+             (uri-authority uri)
+             (uri-path uri)
+             (uri-query uri)
+             (uri-fragment uri)))))
 
 (defun uri= (uri1 uri2)
   (check-type uri1 uri)
