@@ -31,7 +31,8 @@
                   :components
                   ((:file "ftp")
                    (:file "http")
-                   (:file "ldap")))
+                   (:file "ldap")
+                   (:file "file")))
                  (:file "copy" :depends-on ("uri" "port" "uri-classes"))
                  (:file "domain" :depends-on ("uri" "etld"))
                  (:file "etld")

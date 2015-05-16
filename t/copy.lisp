@@ -16,7 +16,7 @@
 (defparameter *base-uri* (uri "http://www.example.com/path/a/b.html"))
 
 (defparameter *merge-test-cases*
-  `((,(uri "file:///tmp/junk.txt") . "file:/tmp/junk.txt") ; the output should probably have three slashes
+  `((,(uri "file:///tmp/junk.txt") . "file:///tmp/junk.txt") ; the output should probably have three slashes
     (,(make-uri :userinfo "auth" :host "secretplace.com") . "http://auth@secretplace.com")
     (,(make-uri :host "example.com" :path "/path" :query "query") . "http://example.com/path?query")
     (,(uri "/new/path") . "http://www.example.com/new/path")

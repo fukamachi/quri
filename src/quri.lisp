@@ -5,6 +5,7 @@
         :quri.uri.ftp
         :quri.uri.http
         :quri.uri.ldap
+        :quri.uri.file
         :quri.error
         :quri.copy)
   (:import-from :quri.domain
@@ -76,6 +77,10 @@
            :uri-ldap-filter
            :uri-ldap-extensions
 
+           :uri-file
+           :uri-file-p
+           :uri-file-pathname
+
            :render-uri
 
            :copy-uri
@@ -111,22 +116,29 @@
                     `(:port ,port))))))
 
 (defun render-uri (uri &optional stream)
-  (if (uri-ftp-p uri)
-      (format stream
-              "~:[~;~:*~(~A~):~]~:[~;~:*//~(~A~)~]~:[~;~:*~A~]~:[~;~:*;type=~A~]~:[~;~:*?~A~]~:[~;~:*#~A~]"
-              (uri-scheme uri)
-              (uri-authority uri)
-              (uri-path uri)
-              (uri-ftp-typecode uri)
-              (uri-query uri)
-              (uri-fragment uri))
-      (format stream
-              "~:[~;~:*~(~A~):~]~:[~;~:*//~(~A~)~]~:[~;~:*~A~]~:[~;~:*?~A~]~:[~;~:*#~A~]"
-              (uri-scheme uri)
-              (uri-authority uri)
-              (uri-path uri)
-              (uri-query uri)
-              (uri-fragment uri))))
+  (cond
+    ((uri-ftp-p uri)
+     (format stream
+             "~@[~(~A~):~]~@[//~(~A~)~]~@[~A~]~@[;type=~A~]~@[?~A~]~@[#~A~]"
+             (uri-scheme uri)
+             (uri-authority uri)
+             (uri-path uri)
+             (uri-ftp-typecode uri)
+             (uri-query uri)
+             (uri-fragment uri)))
+    ((uri-file-p uri)
+     (format stream
+             "~@[~(~A~)://~]~@[~(~a~)~]"
+             (uri-scheme uri)
+             (uri-path uri)))
+    (T
+     (format stream
+             "~@[~(~A~):~]~@[//~(~A~)~]~@[~A~]~@[?~A~]~@[#~A~]"
+             (uri-scheme uri)
+             (uri-authority uri)
+             (uri-path uri)
+             (uri-query uri)
+             (uri-fragment uri)))))
 
 (defun uri= (uri1 uri2)
   (check-type uri1 uri)

@@ -5,6 +5,7 @@
         :quri.uri.ftp
         :quri.uri.http
         :quri.uri.ldap
+        :quri.uri.file
         :split-sequence)
   (:import-from :alexandria
                 :when-let*)
@@ -24,6 +25,7 @@
     ((string= scheme "ldap")  #'make-uri-ldap)
     ((string= scheme "ldaps") #'make-uri-ldaps)
     ((string= scheme "ftp")   #'make-uri-ftp)
+    ((string= scheme "file")  #'make-uri-file)
     ((string= scheme "urn")   #'make-urn)
     (T                        #'make-uri)))
 
