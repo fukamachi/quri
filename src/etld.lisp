@@ -15,7 +15,7 @@
 (defvar *special-tlds* nil)
 
 (defun load-etld-data (&optional (etld-names-file *default-etld-names*))
-  (with-open-file (in etld-names-file)
+  (with-open-file (in etld-names-file :external-format :utf-8)
     (loop with special-tlds = nil
           with normal-tlds = (make-hash-table :test 'equal)
           with wildcard-tlds = (make-hash-table :test 'equal)
