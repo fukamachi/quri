@@ -19,6 +19,7 @@
                  (:test-file "decode")
                  (:test-file "domain")
                  (:test-file "etld")
+                 (:test-file "copy")
                  (:file "benchmark"))))
 
   :defsystem-depends-on (:prove-asdf)
