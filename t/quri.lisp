@@ -57,6 +57,9 @@
       (is (uri-host uri)     (nth 2 params) "host")
       (is (uri-path uri)     (nth 3 params) "path")
       (is (uri-query uri)    (nth 4 params) "query")
-      (is (uri-fragment uri) (nth 5 params) "fragment"))))
+      (is (uri-fragment uri) (nth 5 params) "fragment")))
+  (subtest (format nil "~A (copy-uri)" test-uri)
+    (let ((uri (uri test-uri)))
+      (is uri (copy-uri uri) :test #'uri=))))
 
 (finalize)

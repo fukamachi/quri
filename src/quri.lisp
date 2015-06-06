@@ -80,6 +80,7 @@
            :uri-file-p
            :uri-file-pathname
 
+           :copy-uri
            :render-uri
 
            :url-decode
@@ -94,21 +95,24 @@
            :uri-malformed-urlencoded-string))
 (in-package :quri)
 
+(defun scheme-constructor (scheme)
+  "Get a constructor function appropriate for the scheme."
+  (cond
+    ((string= scheme "http")  #'make-uri-http)
+    ((string= scheme "https") #'make-uri-https)
+    ((string= scheme "ldap")  #'make-uri-ldap)
+    ((string= scheme "ldaps") #'make-uri-ldaps)
+    ((string= scheme "ftp")   #'make-uri-ftp)
+    ((string= scheme "file")  #'make-uri-file)
+    ((string= scheme "urn")   #'make-urn)
+    (T                        #'make-uri)))
+
 (defun uri (data &key (start 0) end)
   (if (uri-p data)
       data
       (multiple-value-bind (scheme userinfo host port path query fragment)
           (parse-uri data :start start :end end)
-        (apply (cond
-                 ((string= scheme "http")  #'make-uri-http)
-                 ((string= scheme "https") #'make-uri-https)
-                 ((string= scheme "ldap")  #'make-uri-ldap)
-                 ((string= scheme "ldaps") #'make-uri-ldaps)
-                 ((string= scheme "ftp")   #'make-uri-ftp)
-                 ((string= scheme "file")  #'make-uri-file)
-                 ((string= scheme "urn")   #'make-urn)
-                 (T                        #'make-uri))
-
+        (apply (scheme-constructor scheme)
                :scheme scheme
                :userinfo userinfo
                :host host
@@ -118,6 +122,23 @@
 
                (and port
                     `(:port ,port))))))
+
+(defun copy-uri (uri &key
+                       (scheme (uri-scheme uri))
+                       (userinfo (uri-userinfo uri))
+                       (host (uri-host uri))
+                       (port (uri-port uri))
+                       (path (uri-path uri))
+                       (query (uri-query uri))
+                       (fragment (uri-fragment uri)))
+  (funcall (scheme-constructor scheme)
+           :scheme scheme
+           :userinfo userinfo
+           :host host
+           :port port
+           :path path
+           :query query
+           :fragment fragment))
 
 (defun render-uri (uri &optional stream)
   (cond
