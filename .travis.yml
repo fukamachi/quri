@@ -14,6 +14,7 @@ install:
   - curl https://raw.githubusercontent.com/luismbo/cl-travis/master/install.sh | bash
 
 before_script:
+  - git clone -b local https://github.com/fukamachi/cl-coveralls ~/lisp/cl-coveralls
   - git clone https://github.com/m2ym/cl-annot ~/lisp/cl-annot
 
 script:
