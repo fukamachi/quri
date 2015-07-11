@@ -31,7 +31,8 @@
   query
   fragment)
 
-(defun make-uri (&rest initargs)
+(defun make-uri (&rest initargs &key scheme userinfo host port path query fragment)
+  (declare (ignore scheme userinfo host port path query fragment))
   (let ((uri (apply #'%make-uri initargs)))
     (unless (uri-port uri)
       (setf (uri-port uri)

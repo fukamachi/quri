@@ -36,6 +36,7 @@
            :parse-query
            :parse-fragment
 
+           :make-uri
            :uri
            :uri=
            :uri-p
