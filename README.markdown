@@ -51,6 +51,18 @@
 
 Parse a string or a byte vector and return a `uri` object.
 
+### \[Function] make-uri
+
+Create a `uri` object.
+
+### \[Function] copy-uri
+
+Return a copy of the given `uri` object.
+
+### \[Function] merge-uris
+
+Merge a reference URI into the base URI as described in RFC 2396 Section 5.2. The returned URI may or may not be a new instance. Neither REFERENCE nor BASE is mutated.
+
 ### \[Structure] uri
 
 Structure class as a representation of URIs. The following methods are available for all classes extends this class.
