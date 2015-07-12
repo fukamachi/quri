@@ -16,7 +16,9 @@
   :components ((:module "t"
                 :components
                 ((:test-file "quri")
+                 (:test-file "parser")
                  (:test-file "decode")
+                 (:test-file "encode")
                  (:test-file "domain")
                  (:test-file "etld")
                  (:file "benchmark"))))

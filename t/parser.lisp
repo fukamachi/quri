@@ -3,7 +3,7 @@
   (:use :cl
         :quri.parser
         :prove))
-(in-package :cl-user)
+(in-package :quri-test.parser)
 
 (plan nil)
 
