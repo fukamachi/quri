@@ -108,7 +108,7 @@
     ((string= scheme "ftp")   #'make-uri-ftp)
     ((string= scheme "file")  #'make-uri-file)
     ((string= scheme "urn")   #'make-urn)
-    (T                        #'make-uri)))
+    (T                        #'make-basic-uri)))
 
 (defun uri (data &key (start 0) end)
   (if (uri-p data)
@@ -134,14 +134,17 @@
                        (path (uri-path uri))
                        (query (uri-query uri))
                        (fragment (uri-fragment uri)))
-  (funcall (scheme-constructor scheme)
-           :scheme scheme
-           :userinfo userinfo
-           :host host
-           :port port
-           :path path
-           :query query
-           :fragment fragment))
+  (make-uri :scheme scheme
+            :userinfo userinfo
+            :host host
+            :port port
+            :path path
+            :query query
+            :fragment fragment))
+
+(defun make-uri (&rest initargs &key scheme userinfo host port path query fragment)
+  (declare (ignore userinfo host port path query fragment))
+  (apply (scheme-constructor scheme) initargs))
 
 (defun render-uri (uri &optional stream)
   (cond

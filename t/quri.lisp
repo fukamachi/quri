@@ -2,8 +2,7 @@
 (defpackage quri-test
   (:use :cl
         :quri
-        :prove)
-  (:import-from :quri.uri :make-uri))
+        :prove))
 (in-package :quri-test)
 
 (plan nil)

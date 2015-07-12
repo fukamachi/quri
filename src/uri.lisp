@@ -4,7 +4,7 @@
   (:import-from :quri.port
                 :scheme-default-port)
   (:export :uri
-           :make-uri
+           :make-basic-uri
            :uri-p
            :uri-scheme
            :uri-userinfo
@@ -31,9 +31,14 @@
   query
   fragment)
 
-(defun make-uri (&rest initargs &key scheme userinfo host port path query fragment)
-  (declare (ignore scheme userinfo host port path query fragment))
-  (let ((uri (apply #'%make-uri initargs)))
+(defun make-basic-uri (&key scheme userinfo host port path query fragment)
+  (let ((uri (%make-uri :scheme scheme
+                        :userinfo userinfo
+                        :host host
+                        :port port
+                        :path path
+                        :query query
+                        :fragment fragment)))
     (unless (uri-port uri)
       (setf (uri-port uri)
             (scheme-default-port (uri-scheme uri))))
