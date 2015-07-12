@@ -13,7 +13,7 @@
 (in-package :quri-asd)
 
 (defsystem quri
-  :version "0.0.1"
+  :version "0.1.0"
   :author "Eitaro Fukamachi"
   :license "BSD 3-Clause"
   :depends-on (:babel
