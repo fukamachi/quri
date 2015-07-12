@@ -239,14 +239,19 @@ mutated."
       (setf (uri-host uri) (uri-host base))
       (setf (uri-port uri) (uri-port base))
 
-      ;; Step 5 -- Absolute path
+      ;; Step 5 -- Empty path
+      (when (null (uri-path uri))
+        (setf (uri-path uri) (uri-path base))
+        (done))
+
+      ;; Step 6 -- Absolute path
       (alexandria:when-let* ((p (uri-path uri))
                              (first-char (and (> (length p) 0) (char p 0))))
         (when (char= #\/ first-char)
           (done)))
 
-      ;; Step 6 -- Relative path
+      ;; Step 7 -- Relative path
       (setf (uri-path uri) (merge-uri-paths (uri-path uri) (uri-path base)))
 
-      ;; Step 7 -- Finish
+      ;; Step 8 -- Finish
       (done))))
