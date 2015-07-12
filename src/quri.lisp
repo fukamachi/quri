@@ -22,6 +22,8 @@
                 :parse-path
                 :parse-query
                 :parse-fragment)
+  (:import-from :quri.port
+                :scheme-default-port)
   (:import-from :quri.decode
                 :url-decode
                 :url-decode-params)
@@ -219,10 +221,7 @@
 The returned URI may or may not be a new instance. Neither REFERENCE nor BASE is
 mutated."
   ;; Step 2 -- return base if same document
-  (when (and (null (uri-path reference))
-             (null (uri-scheme reference))
-             (null (uri-authority reference))
-             (null (uri-query reference)))
+  (when (uri= reference base)
     (return-from merge-uris base))
 
   ;; Step 3 -- scheme
@@ -230,7 +229,7 @@ mutated."
     (return-from merge-uris reference))
   (let ((uri (copy-uri reference :scheme (uri-scheme base))))
     (when (null (uri-port uri))
-      (setf (uri-port uri) (quri.port:scheme-default-port (uri-scheme uri))))
+      (setf (uri-port uri) (scheme-default-port (uri-scheme uri))))
     (macrolet ((done () '(return-from merge-uris uri)))
 
       ;; Step 4 -- Authority
