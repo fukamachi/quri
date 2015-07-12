@@ -7,6 +7,13 @@
 
 (plan nil)
 
+(subtest "uri="
+  (let ((prove:*default-test-function* #'uri=))
+    (is (uri "http://b.hatena.ne.jp")
+        (uri "http://b.hatena.ne.jp:80"))
+    (is (uri "http://b.hatena.ne.jp")
+        (make-uri :scheme "http" :host "b.hatena.ne.jp"))))
+
 (defparameter *test-cases*
   '(("file:///tmp/junk.txt" .
      ("file" nil nil "/tmp/junk.txt" nil nil))
