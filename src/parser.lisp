@@ -10,7 +10,8 @@
                 #+allegro :sys
                 :variable-information)
   (:import-from :alexandria
-                :with-gensyms)
+                :with-gensyms
+                :define-constant)
   (:export :parse-uri
            :parse-scheme
            :parse-authority
@@ -20,6 +21,33 @@
 (in-package :quri.parser)
 
 (deftype simple-byte-vector (&optional (len '*)) `(simple-array (unsigned-byte 8) (,len)))
+
+(declaim (type (simple-array fixnum (128)) +uri-char+))
+(define-constant +uri-char+
+    (let ((uri-char (make-array 128 :element-type 'fixnum :initial-element 0)))
+      (dotimes (i 128 uri-char)
+        (let ((char (code-char i)))
+          (when (or (alphanumericp char)
+                    (char= char #\%)
+                    (char= char #\:)
+                    (char= char #\@)
+                    (char= char #\-)
+                    (char= char #\.)
+                    (char= char #\_)
+                    (char= char #\~)
+                    (char= char #\!)
+                    (char= char #\$)
+                    (char= char #\&)
+                    (char= char #\')
+                    (char= char #\()
+                    (char= char #\))
+                    (char= char #\*)
+                    (char= char #\+)
+                    (char= char #\,)
+                    (char= char #\;)
+                    (char= char #\=))
+            (setf (aref uri-char i) 1)))))
+  :test 'equalp)
 
 (defun parse-uri (data &key (start 0) end)
   (etypecase data
@@ -89,7 +117,8 @@
                               (setq port
                                     (parse-integer data :start (the fixnum port-start) :end (the fixnum port-end)))
                             (error ()
-                              (error 'uri-invalid-port))))))))
+                              (error 'uri-invalid-port
+                                     :data data :position port-start))))))))
                 (locally (declare (optimize (safety 0)))
                   (parse-from-path data (or port-end host-end (1+ end))))))))))
     (values scheme userinfo host port path query fragment)))
@@ -117,7 +146,8 @@
                  (declare (type fixnum code)
                           #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note))
                  (unless (<= #.(char-code #\0) code #.(char-code #\9))
-                   (error 'uri-invalid-port))
+                   (error 'uri-invalid-port
+                          :data data :position i))
 
                  (setq res (+ (* res 10)
                               (- code #.(char-code #\0))))))))
@@ -203,6 +233,8 @@
                     (optimize (speed 3) (safety 2)))
            (macrolet ((char=* (char1 char2)
                         `(char= ,char1 ,char2))
+                      (char-code* (char)
+                        `(char-code ,char))
                       (scheme-char-p* (char)
                         `(scheme-char-p ,char))
                       (standard-alpha-char-p* (char)
@@ -218,6 +250,8 @@
                     (optimize (speed 3) (safety 2)))
            (macrolet ((char=* (byte char)
                         `(= ,byte ,(char-code char)))
+                      (char-code* (byte)
+                        byte)
                       (scheme-char-p* (byte)
                         `(scheme-byte-p ,byte))
                       (standard-alpha-char-p* (byte)
@@ -321,7 +355,7 @@
 
   (parsing-authority-starting
    (unless (char=* char #\/)
-     (error 'uri-malformed-string))
+     (error 'uri-malformed-string :data data :position p))
    (gonext))
 
   (parsing-authority-start
@@ -338,7 +372,7 @@
       (redo))
      ((char=* char #\@)
       (when userinfo-start
-        (error 'uri-malformed-string))
+        (error 'uri-malformed-string :data data :position p))
       (setq userinfo-start authority-mark
             userinfo-end p)
       (setq authority-mark (1+ p)
@@ -348,7 +382,10 @@
           (char=* char #\?)
           (char=* char #\#))
       (go :eof))
-     (T (redo))))
+     ((= (aref +uri-char+ (char-code* char)) 1)
+      (redo))
+     (T (error 'uri-malformed-string
+               :data data :position p))))
 
   (parsing-ipliteral
    (if (char=* char #\])
@@ -371,7 +408,31 @@
              host-start host-end
              port-start port-end))))
 
-(defmacro parse-until-string (delimiters data &key start end)
+(defun path-char-p (char)
+  (declare (type character char)
+           (optimize (speed 3) (safety 0)))
+  (or (= (aref +uri-char+ (char-code char)) 1)
+      (char= char #\/)))
+
+(defun path-byte-p (byte)
+  (declare (type (unsigned-byte 8) byte)
+           (optimize (speed 3) (safety 0)))
+  (or (= (aref +uri-char+ byte) 1)
+      (= byte (char-code #\/))))
+
+(defun query-char-p (char)
+  (declare (type character char)
+           (optimize (speed 3) (safety 0)))
+  (or (path-char-p char)
+      (char= char #\?)))
+
+(defun query-byte-p (byte)
+  (declare (type (unsigned-byte 8) byte)
+           (optimize (speed 3) (safety 0)))
+  (or (path-byte-p byte)
+      (= byte (char-code #\?))))
+
+(defmacro parse-until-string (delimiters data &key start end test)
   (with-gensyms (p char)
     `(block nil
        (progn
@@ -383,9 +444,13 @@
              (declare (type character ,char))
              (when (or ,@(loop for delim in delimiters
                                collect `(char= ,delim ,char)))
-               (return (values ,data ,start ,p)))))))))
+               (return (values ,data ,start ,p)))
+             ,@(when test
+                 `((unless (funcall ,test ,char)
+                      (error 'uri-malformed-string
+                             :data ,data :position ,p))))))))))
 
-(defmacro parse-until-byte-vector (delimiters data &key start end)
+(defmacro parse-until-byte-vector (delimiters data &key start end test)
   (with-gensyms (p byte)
     `(block nil
        (progn
@@ -397,7 +462,11 @@
              (declare (type (unsigned-byte 8) ,byte))
              (when (or ,@(loop for delim in delimiters
                                collect `(= ,(char-code delim) ,byte)))
-               (return (values ,data ,start ,p)))))))))
+               (return (values ,data ,start ,p)))
+             ,@(when test
+                 `((unless (funcall ,test ,byte)
+                     (error 'uri-malformed-string
+                            :data ,data :position ,p))))))))))
 
 (defun parse-path (data &key (start 0) (end (length data)))
   (etypecase data
@@ -410,13 +479,13 @@
   (declare (type simple-string data)
            (optimize (speed 3) (safety 2))
            #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note))
-  (parse-until-string (#\? #\#) data :start start :end end))
+  (parse-until-string (#\? #\#) data :start start :end end :test #'path-char-p))
 
 (defun parse-path-byte-vector (data &key (start 0) (end (length data)))
   (declare (type simple-byte-vector data)
            (optimize (speed 3) (safety 2))
            #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note))
-  (parse-until-byte-vector (#\? #\#) data :start start :end end))
+  (parse-until-byte-vector (#\? #\#) data :start start :end end :test #'path-byte-p))
 
 (defun parse-query (data &key (start 0) (end (length data)))
   (etypecase data
@@ -443,7 +512,7 @@
            (optimize (speed 3) (safety 2)))
   (let ((?-pos (position #\? data :start start :end end)))
     (when ?-pos
-      (parse-until-string (#\#) data :start (1+ (the fixnum ?-pos)) :end end))))
+      (parse-until-string (#\#) data :start (1+ (the fixnum ?-pos)) :end end :test #'query-char-p))))
 
 (defun parse-query-byte-vector (data &key (start 0) (end (length data)))
   (declare (type simple-byte-vector data)
@@ -451,7 +520,7 @@
            (optimize (speed 3) (safety 2)))
   (let ((?-pos (position #.(char-code #\?) data :start start :end end)))
     (when ?-pos
-      (parse-until-byte-vector (#\#) data :start (1+ (the fixnum ?-pos)) :end end))))
+      (parse-until-byte-vector (#\#) data :start (1+ (the fixnum ?-pos)) :end end :test #'query-byte-p))))
 
 (defun parse-fragment (data &key (start 0) (end (length data)))
   (etypecase data
