@@ -76,7 +76,7 @@
                    (incf i)
                    (replace res converted :start1 i)
                    (incf i 2))))))
-        ((< byte 128)
+        ((unreservedp byte)
          (setf (aref res i) (code-char byte))
          (incf i))
         (T
