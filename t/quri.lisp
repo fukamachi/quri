@@ -69,6 +69,9 @@
     (let ((uri (uri test-uri)))
       (is uri (copy-uri uri) :test #'uri=))))
 
+(is-error (uri "//www.youtube.com/embed/”6j0LpmSdWg4”")
+          'uri-malformed-string)
+
 (defparameter *base-uri* (uri "http://www.example.com/path/a/b.html"))
 
 (defparameter *merge-test-cases*

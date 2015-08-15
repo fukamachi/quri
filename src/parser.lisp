@@ -411,8 +411,10 @@
 (defun path-char-p (char)
   (declare (type character char)
            (optimize (speed 3) (safety 0)))
-  (or (= (aref +uri-char+ (char-code char)) 1)
-      (char= char #\/)))
+  (let ((byte (char-code char)))
+    (and (< byte 128)
+         (or (= (aref +uri-char+ byte) 1)
+             (= byte #.(char-code #\/))))))
 
 (defun path-byte-p (byte)
   (declare (type (unsigned-byte 8) byte)
