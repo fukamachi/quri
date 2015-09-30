@@ -395,7 +395,11 @@
 
   (:eof
    (unless authority-mark
-     (return-from parse-authority))
+     (return-from parse-authority
+       (values data
+               nil nil
+               p p
+               nil nil)))
    (if colon-mark
        (setq host-start authority-mark
              host-end colon-mark
