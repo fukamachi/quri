@@ -12,7 +12,19 @@
     (is (uri "http://b.hatena.ne.jp")
         (uri "http://b.hatena.ne.jp:80"))
     (is (uri "http://b.hatena.ne.jp")
-        (make-uri :scheme "http" :host "b.hatena.ne.jp"))))
+        (make-uri :scheme "http" :host "b.hatena.ne.jp"))
+    (is (uri "http://b.hatena.ne.jp")
+        (uri "http://b.hatena.ne.jp/"))
+    (isnt (uri "http://b.hatena.ne.jp/")
+          (uri "http://b.hatena.ne.jp/?"))
+    (isnt (uri "http//b.hatena.ne.jp/#foo")
+          (uri "http//b.hatena.ne.jp/#bar"))
+    #+todo
+    (is (uri "mailto:Joe@Example.COM")
+        (uri "mailto:Joe@example.com"))
+    #+todo
+    (is (uri "mailto:Postmaster@example.com")
+        (uri "mailto:POSTMASTER@example.com"))))
 
 (defparameter *test-cases*
   '(("file:///tmp/junk.txt" .

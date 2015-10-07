@@ -178,7 +178,9 @@
   (check-type uri2 uri)
   (when (eq (type-of uri1) (type-of uri2))
     (and (equalp (uri-scheme uri1)    (uri-scheme uri2))
-         (equal  (uri-path uri1)      (uri-path uri2))
+         ;; An empty path should be normalized to a path of "/".
+         ;; RFC 3986 (https://tools.ietf.org/html/rfc3986#section-6.2.3)
+         (equal  (or (uri-path uri1) "/") (or (uri-path uri2) "/"))
          (equal  (uri-query uri1)     (uri-query uri2))
          (equal  (uri-fragment uri1)  (uri-fragment uri2))
          (equalp (uri-authority uri1) (uri-authority uri2))
