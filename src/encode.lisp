@@ -96,6 +96,9 @@
       (write-string (url-encode field :encoding encoding :space-to-plus space-to-plus) s)
       (when value
         (write-char #\= s)
-        (write-string (url-encode value :encoding encoding :space-to-plus space-to-plus) s))
+        (write-string (url-encode (if (stringp value)
+                                      value
+                                      (write-to-string value))
+                                  :encoding encoding :space-to-plus space-to-plus) s))
       (when rest
         (write-char #\& s)))))
