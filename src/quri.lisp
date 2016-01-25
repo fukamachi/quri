@@ -31,6 +31,9 @@
                 :url-encode
                 :url-encode-params)
   (:import-from :split-sequence :split-sequence)
+  (:import-from :alexandria
+                :delete-from-plist
+                :when-let*)
   (:export :parse-uri
            :parse-scheme
            :parse-authority
@@ -144,9 +147,15 @@
             :query query
             :fragment fragment))
 
-(defun make-uri (&rest initargs &key scheme userinfo host port path query fragment)
+(defun make-uri (&rest initargs &key scheme userinfo host port path query fragment defaults)
   (declare (ignore userinfo host port path query fragment))
-  (apply (scheme-constructor scheme) initargs))
+  (setf initargs (delete-from-plist initargs :defaults))
+  (if defaults
+      (apply #'copy-uri (uri defaults) initargs)
+      (progn
+        (when (consp query)
+          (setf (getf initargs :query) (url-encode-params query)))
+        (apply (scheme-constructor scheme) initargs))))
 
 (defun render-uri (uri &optional stream)
   (cond

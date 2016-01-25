@@ -56,6 +56,17 @@ Parse a string or a byte vector and return a `uri` object.
 
 Create a `uri` object.
 
+```common-lisp
+(make-uri :scheme "http"
+          :host "8arrow.org"
+          :path "/")
+;=> #<QURI.URI.HTTP:URI-HTTP http://8arrow.org/>
+
+(make-uri :defaults "http://8arrow.org"
+          :query '(("guest" . 1)))
+;=> #<QURI.URI.HTTP:URI-HTTP http://8arrow.org?guest=1>
+```
+
 ### \[Function] copy-uri
 
 Return a copy of the given `uri` object.
