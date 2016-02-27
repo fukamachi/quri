@@ -14,7 +14,9 @@
      "http" 80
      "ldap" 389
      "https" 443
-     "ldaps" 636)
+     "ldaps" 636
+     "ws" 80
+     "wss" 443)
    :test 'equal))
 
 (defun scheme-default-port (scheme)
