@@ -95,7 +95,8 @@
              (declare (type string string)
                       (type fixnum start))
              (when (<= (length string) start)
-               (return-from read-section nil))
+               (return-from read-section
+                 (values start read-colons t)))
              (when (char= (aref string start) #\:)
                (cond
                  ((<= (length string) (1+ start))
