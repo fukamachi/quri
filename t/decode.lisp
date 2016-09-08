@@ -30,10 +30,16 @@
 (is (url-decode-params "a=%!@#&b=1" :lenient t)
     '(("b" . "1")))
 
-(is (url-decode "%BF" :lenient t)
-    (princ-to-string #\Replacement_Character))
+(defvar *replacement-character*
+  #+abcl
+  (babel:octets-to-string (coerce #(239 191 189) '(array (unsigned-byte 8) (3))))
+  #-abcl
+  (princ-to-string #\replacement_character))
 
-(is (url-decode-params "%BF" :lenient t)
-    `((,(princ-to-string #\Replacement_Character))))
+(is (url-decode "%bf" :lenient t)
+    *replacement-character*)
+
+(is (url-decode-params "%bf" :lenient t)
+    `((,*replacement-character*)))
 
 (finalize)
