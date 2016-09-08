@@ -32,7 +32,8 @@
 (defun url-decode (data &key
                           (encoding babel-encodings:*default-character-encoding*)
                           (start 0)
-                          end)
+                          end
+                          (lenient nil))
   (declare (type (or string (simple-array (unsigned-byte 8) (*))) data)
            (type integer start)
            (optimize (speed 3) (safety 2)))
@@ -75,7 +76,7 @@
         (:eof
          (when parsing-encoded-part
            (error 'url-decoding-error)))))
-    (babel:octets-to-string buffer :end i :encoding encoding)))
+    (babel:octets-to-string buffer :end i :encoding encoding :errorp (not lenient))))
 
 (defun url-decode-params (data &key
                                  (delimiter #\&)
@@ -99,8 +100,13 @@
                                      (declare (ignore error))
                                      (when lenient
                                        (go continue)))))
-                    (collect (cons (url-decode data :encoding encoding :start start-mark :end =-mark)
-                                   (url-decode data :encoding encoding :start (1+ =-mark) :end p))))
+                    (collect
+                        (cons (url-decode data :encoding encoding
+                                               :start start-mark :end =-mark
+                                               :lenient lenient)
+                              (url-decode data :encoding encoding
+                                               :start (1+ =-mark) :end p
+                                               :lenient lenient))))
                 continue)
                (setq start-mark nil
                      =-mark nil))
@@ -111,7 +117,11 @@
                                      (declare (ignore error))
                                      (when lenient
                                        (go continue)))))
-                    (collect (cons (url-decode data :encoding encoding :start start-mark :end p) nil)))
+                    (collect
+                        (cons (url-decode data :encoding encoding
+                                               :start start-mark :end p
+                                               :lenient lenient)
+                              nil)))
                 continue)
                (setq start-mark nil)))
         (with-array-parsing (char p data start end (and (not (stringp data))
