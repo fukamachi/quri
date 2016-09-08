@@ -5,7 +5,7 @@
         :prove))
 (in-package :quri-test.decode)
 
-(plan 6)
+(plan 8)
 
 (is (url-decode-params "a=b&c=d")
     '(("a" . "b") ("c" . "d"))
@@ -29,5 +29,11 @@
 
 (is (url-decode-params "a=%!@#&b=1" :lenient t)
     '(("b" . "1")))
+
+(is (url-decode "%BF" :lenient t)
+    (princ-to-string #\Replacement_Character))
+
+(is (url-decode-params "%BF" :lenient t)
+    `((,(princ-to-string #\Replacement_Character))))
 
 (finalize)
