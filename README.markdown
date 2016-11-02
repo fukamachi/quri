@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/fukamachi/quri.svg?branch=master)](https://travis-ci.org/fukamachi/quri)
 [![Coverage Status](https://coveralls.io/repos/fukamachi/quri/badge.svg?branch=master)](https://coveralls.io/r/fukamachi/quri)
 
-<p align=center><a href="https://www.flickr.com/photos/m-louis/8209540334/"><img src="http://c1.staticflickr.com/9/8202/8209540334_261582582c_h.jpg" alt="冷やしきゅうり"></a></p>
+<p align=center><a href="https://www.flickr.com/photos/m-louis/8209540334/"><img src="https://c7.staticflickr.com/9/8202/8209540334_76417d9fde_b.jpg" alt="冷やしきゅうり"></a></p>
 <p align=right><i>Photo by <a href="https://www.flickr.com/photos/m-louis/">m-louis</a>, licensed under the <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a> license.</i></p>
 
 **QURI** (pronounced "Q-ree") is yet another URI library for Common Lisp. It is intended to be a replacement of [PURI](http://puri.b9.com).
