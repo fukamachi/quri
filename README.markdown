@@ -12,6 +12,7 @@
 
 - Fast. (See [Benchmark](#benchmark))
 - Doesn't encode/decode URL implicitly.
+- UTF-8 characters support.
 - Supports userinfo. (ex. `git` in `git@github.com`)
 - Supports IPv6 hostname. (ex. `ldap://[2001:db8::7]/`)
 - Allows byte vectors as input.
