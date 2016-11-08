@@ -49,12 +49,6 @@
             (setf (aref uri-char i) 1)))))
   :test 'equalp)
 
-(defun parse-uri (data &key (start 0) end)
-  (etypecase data
-    (simple-string (parse-uri-string data :start start :end end))
-    (simple-byte-vector (parse-uri-byte-vector data :start start :end end))
-    (string (parse-uri (coerce data 'simple-string) :start start :end end))))
-
 #+(or sbcl openmcl cmu allegro)
 (define-compiler-macro parse-uri (&whole form &environment env data &key start end)
   (declare (ignore start end))
@@ -66,6 +60,12 @@
       ((subtypep type 'simple-string) `(parse-uri-string ,@(cdr form)))
       ((subtypep type 'simple-byte-vector) `(parse-uri-byte-vector ,@(cdr form)))
       (T form))))
+
+(defun parse-uri (data &key (start 0) end)
+  (etypecase data
+    (simple-string (parse-uri-string data :start start :end end))
+    (simple-byte-vector (parse-uri-byte-vector data :start start :end end))
+    (string (parse-uri (coerce data 'simple-string) :start start :end end))))
 
 (defun parse-uri-string (data &key (start 0) end)
   (declare (type simple-string data)
