@@ -148,7 +148,7 @@
             :fragment fragment))
 
 (defun make-uri (&rest initargs &key scheme userinfo host port path query fragment defaults)
-  (declare (ignore userinfo host port path query fragment))
+  (declare (ignore userinfo host port path fragment))
   (setf initargs (delete-from-plist initargs :defaults))
   (if defaults
       (apply #'copy-uri (uri defaults) initargs)
