@@ -519,7 +519,7 @@
            (optimize (speed 3) (safety 2)))
   (let ((?-pos (position #\? data :start start :end end)))
     (when ?-pos
-      (parse-until-string (#\#) data :start (1+ (the fixnum ?-pos)) :end end :test #'query-char-p))))
+      (parse-until-string (#\#) data :start (1+ (the fixnum ?-pos)) :end end))))
 
 (defun parse-query-byte-vector (data &key (start 0) (end (length data)))
   (declare (type simple-byte-vector data)
@@ -527,7 +527,7 @@
            (optimize (speed 3) (safety 2)))
   (let ((?-pos (position #.(char-code #\?) data :start start :end end)))
     (when ?-pos
-      (parse-until-byte-vector (#\#) data :start (1+ (the fixnum ?-pos)) :end end :test #'query-byte-p))))
+      (parse-until-byte-vector (#\#) data :start (1+ (the fixnum ?-pos)) :end end))))
 
 (defun parse-fragment (data &key (start 0) (end (length data)))
   (etypecase data
