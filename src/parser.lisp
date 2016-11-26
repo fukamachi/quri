@@ -486,13 +486,13 @@
   (declare (type simple-string data)
            (optimize (speed 3) (safety 2))
            #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note))
-  (parse-until-string (#\? #\#) data :start start :end end :test #'path-char-p))
+  (parse-until-string (#\? #\#) data :start start :end end))
 
 (defun parse-path-byte-vector (data &key (start 0) (end (length data)))
   (declare (type simple-byte-vector data)
            (optimize (speed 3) (safety 2))
            #+sbcl (sb-ext:muffle-conditions sb-ext:compiler-note))
-  (parse-until-byte-vector (#\? #\#) data :start start :end end :test #'path-byte-p))
+  (parse-until-byte-vector (#\? #\#) data :start start :end end))
 
 (defun parse-query (data &key (start 0) (end (length data)))
   (etypecase data
