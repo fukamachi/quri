@@ -83,6 +83,7 @@
     (let ((uri (uri test-uri)))
       (is uri (copy-uri uri) :test #'uri=))))
 
+#+nil
 (is-error (uri "//www.youtube.com/embed/”6j0LpmSdWg4”")
           'uri-malformed-string)
 
