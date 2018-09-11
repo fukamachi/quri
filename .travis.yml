@@ -16,6 +16,10 @@ env:
     - LISP=allegro
     - LISP=cmucl
 
+matrix:
+  allow_failures:
+    - LISP=cmucl
+
 install:
   - curl -L https://raw.githubusercontent.com/roswell/roswell/$ROSWELL_BRANCH/scripts/install-for-ci.sh | sh
   - ros install prove
