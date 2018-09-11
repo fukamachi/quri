@@ -18,7 +18,7 @@ env:
 
 matrix:
   allow_failures:
-    - LISP=cmucl
+    - env: LISP=cmucl
 
 install:
   - curl -L https://raw.githubusercontent.com/roswell/roswell/$ROSWELL_BRANCH/scripts/install-for-ci.sh | sh
