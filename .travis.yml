@@ -21,4 +21,5 @@ install:
   - ros install prove
 
 script:
+  - ros -s quri-test
   - run-prove quri-test.asd
