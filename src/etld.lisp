@@ -7,37 +7,41 @@
   (:export :parse-domain))
 (in-package :quri.etld)
 
-(defvar *default-etld-names*
-  (asdf:system-relative-pathname :quri #P"data/effective_tld_names.dat"))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defvar *default-etld-names*
+    #.(asdf:system-relative-pathname :quri #P"data/effective_tld_names.dat"))
 
-(defvar *normal-tlds* nil)
-(defvar *wildcard-tlds* nil)
-(defvar *special-tlds* nil)
+  (defvar *normal-tlds* nil)
+  (defvar *wildcard-tlds* nil)
+  (defvar *special-tlds* nil)
 
-(defun load-etld-data (&optional (etld-names-file *default-etld-names*))
-  (with-open-file (in etld-names-file
-                      :element-type #+lispworks :default #-lispworks 'character
-                      :external-format #+clisp charset:utf-8 #-clisp :utf-8)
-    (loop with special-tlds = nil
-          with normal-tlds = (make-hash-table :test 'equal)
-          with wildcard-tlds = (make-hash-table :test 'equal)
-          for line = (read-line in nil nil)
-          while line
-          unless (or (= 0 (length line))
-                     (starts-with-subseq "//" line))
-            do (cond
-                 ((starts-with-subseq "*" line)
-                  (setf (gethash (subseq line 2) wildcard-tlds) t))
-                 ((starts-with-subseq "!" line)
-                  (push (subseq line 1) special-tlds))
-                 (t
-                  (setf (gethash line normal-tlds) t)))
-          finally
-             (setf *special-tlds* special-tlds
-                   *normal-tlds* normal-tlds
-                   *wildcard-tlds* wildcard-tlds))))
+  (defun load-etld-data (&optional (etld-names-file *default-etld-names*))
+    (with-open-file (in etld-names-file
+                        :element-type #+lispworks :default #-lispworks 'character
+                        :external-format #+clisp charset:utf-8 #-clisp :utf-8)
+      (loop with special-tlds = nil
+         with normal-tlds = (make-hash-table :test 'equal)
+         with wildcard-tlds = (make-hash-table :test 'equal)
+         for line = (read-line in nil nil)
+         while line
+         unless (or (= 0 (length line))
+                    (starts-with-subseq "//" line))
+         do (cond
+              ((starts-with-subseq "*" line)
+               (setf (gethash (subseq line 2) wildcard-tlds) t))
+              ((starts-with-subseq "!" line)
+               (push (subseq line 1) special-tlds))
+              (t
+               (setf (gethash line normal-tlds) t)))
+         finally
+           (setf *special-tlds* special-tlds
+                 *normal-tlds* normal-tlds
+                 *wildcard-tlds* wildcard-tlds)))))
 
-(load-etld-data)
+(setf (values *normal-tlds* *wildcard-tlds* *special-tlds*)
+      #.(let (*normal-tlds* *wildcard-tlds* *special-tlds*)
+          (load-etld-data)
+          (values *normal-tlds* *wildcard-tlds* *special-tlds*)))
 
 (defun next-subdomain (hostname &optional (start 0))
   (let ((pos (position #\. hostname :start start)))
