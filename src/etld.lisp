@@ -31,7 +31,9 @@
                (setf (gethash line normal-tlds) t)))
          finally (return (list normal-tlds wildcard-tlds special-tlds))))))
 
-(defvar *etlds* '#.(load-etld-data))
+(defvar *etlds*
+  #-abcl '#.(load-etld-data)
+  #+abcl (load-etld-data))
 
 (defun next-subdomain (hostname &optional (start 0))
   (let ((pos (position #\. hostname :start start)))
