@@ -39,9 +39,9 @@
                  *wildcard-tlds* wildcard-tlds)))))
 
 (setf (values *normal-tlds* *wildcard-tlds* *special-tlds*)
-      #.(let (*normal-tlds* *wildcard-tlds* *special-tlds*)
-          (load-etld-data)
-          (values *normal-tlds* *wildcard-tlds* *special-tlds*)))
+      (values-list '#.(let (*normal-tlds* *wildcard-tlds* *special-tlds*)
+                        (load-etld-data)
+                        (list *normal-tlds* *wildcard-tlds* *special-tlds*))))
 
 (defun next-subdomain (hostname &optional (start 0))
   (let ((pos (position #\. hostname :start start)))
