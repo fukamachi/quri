@@ -197,9 +197,11 @@
              (eql (uri-ftp-typecode uri1) (uri-ftp-typecode uri2))))))
 
 (defmethod print-object ((uri uri) stream)
-  (format stream "#<~S ~A>"
-          (type-of uri)
-          (render-uri uri)))
+  (if (and (null *print-readably*) (null *print-escape*))
+      (render-uri uri stream)
+      (format stream "#<~S ~A>"
+              (type-of uri)
+              (render-uri uri))))
 
 
 (defun merge-uri-paths (ref-path base-path)
