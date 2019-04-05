@@ -385,9 +385,10 @@
           (char=* char #\?)
           (char=* char #\#))
       (go :eof))
-     ((= (aref +uri-char+ (char-code* char)) 1)
+     ((let ((code (char-code* char)))
+        (and (<= 0 code 127) (= (aref +uri-char+ code) 1)))
       (redo))
-     (T (error 'uri-malformed-string
+     (t (error 'uri-malformed-string
                :data data :position p))))
 
   (parsing-ipliteral
