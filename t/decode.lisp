@@ -28,7 +28,7 @@
           "Raise a decoding error")
 
 (is (url-decode-params "a=%!@#&b=1" :lenient t)
-    '(("b" . "1")))
+    '(("a" . "%!@#") ("b" . "1")))
 
 (defvar *replacement-character*
   #+abcl

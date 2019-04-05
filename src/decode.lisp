@@ -62,14 +62,22 @@
             (redo))))
 
         (parsing-encoded-part
-         (setq parsing-encoded-part
-               (* 16 (hexdigit-to-integer char)))
+         (setq parsing-encoded-part char)
          (gonext))
 
         (parsing-encoded-part-second
-         (write-to-buffer
-          (+ parsing-encoded-part
-             (hexdigit-to-integer char)))
+         (handler-bind ((url-decoding-error
+                          (lambda (error)
+                            (declare (ignore error))
+                            (when lenient
+                              (write-to-buffer #.(char-code #\%))
+                              (write-to-buffer (char-code parsing-encoded-part))
+                              (write-to-buffer (char-code char))
+                              (setq parsing-encoded-part nil)
+                              (goto parsing)))))
+           (write-to-buffer
+            (+ (* 16 (hexdigit-to-integer parsing-encoded-part))
+               (hexdigit-to-integer char))))
          (setq parsing-encoded-part nil)
          (goto parsing))
 
