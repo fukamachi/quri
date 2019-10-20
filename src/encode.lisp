@@ -79,7 +79,7 @@
         ((unreservedp byte)
          (setf (aref res i) (code-char byte))
          (incf i))
-        (T
+        (t
          (setf (aref res i) #\%)
          (incf i)
          (replace res (integer-to-hexdigit byte) :start1 i)

@@ -59,7 +59,7 @@
       ((null type) form)
       ((subtypep type 'simple-string) `(parse-uri-string ,@(cdr form)))
       ((subtypep type 'simple-byte-vector) `(parse-uri-byte-vector ,@(cdr form)))
-      (T form))))
+      (t form))))
 
 (defun parse-uri (data &key (start 0) end)
   (etypecase data
@@ -228,7 +228,7 @@
                  ((null ,type) ,form)
                  ((subtypep ,type 'simple-string) `(,',fn-for-string ,@(cdr ,form)))
                  ((subtypep ,type 'simple-byte-vector) `(,',fn-for-byte-vector ,@(cdr ,form)))
-                 (T ,form))))
+                 (t ,form))))
   
            (defun ,fn-for-string (,data &key (,start 0) (,end (length ,data)) ,@other-args)
              (declare (type simple-string ,data)
@@ -296,7 +296,7 @@
         (values data start p)))
      ((scheme-char-p* char)
       (redo))
-     (T
+     (t
       (return-from parse-scheme nil))))
 
   (parsing-H
@@ -325,7 +325,7 @@
      ((or (char=* char #\s)
           (char=* char #\S))
       (goto parsing-HTTPS))
-     (T (goto parsing-scheme 0))))
+     (t (goto parsing-scheme 0))))
 
   (parsing-HTTPS
    (if (char=* char #\:)
@@ -352,7 +352,7 @@
       (redo))
      ((char=* char #\/)
       (gonext))
-     (T
+     (t
       (return-from parse-authority
         (values data nil nil start start nil nil)))))
 
@@ -515,7 +515,7 @@
       ((null type) form)
       ((subtypep type 'simple-string) `(parse-query-string ,@(cdr form)))
       ((subtypep type 'simple-byte-vector) `(parse-query-byte-vector ,@(cdr form)))
-      (T form))))
+      (t form))))
 
 (defun parse-query-string (data &key (start 0) (end (length data)))
   (declare (type simple-string data)
@@ -548,7 +548,7 @@
       ((null type) form)
       ((subtypep type 'simple-string) `(parse-fragment-string ,@(cdr form)))
       ((subtypep type 'simple-byte-vector) `(parse-fragment-byte-vector ,@(cdr form)))
-      (T form))))
+      (t form))))
 
 (defun parse-fragment-string (data &key (start 0) (end (length data)))
   (declare (type simple-string data)
