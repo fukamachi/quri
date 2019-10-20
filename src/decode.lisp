@@ -27,7 +27,7 @@
        (- code #.(- (char-code #\A) 10)))
       ((<= #.(char-code #\a) code #.(char-code #\f))
        (- code #.(- (char-code #\a) 10)))
-      (T (error 'url-decoding-error)))))
+      (t (error 'url-decoding-error)))))
 
 (defun url-decode (data &key
                           (encoding babel-encodings:*default-character-encoding*)
@@ -57,7 +57,7 @@
            ((char= char #\+)
             (write-to-buffer #.(char-code #\Space))
             (redo))
-           (T
+           (t
             (write-to-buffer (char-code char))
             (redo))))
 

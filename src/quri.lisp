@@ -113,7 +113,7 @@
     ((string= scheme "ftp")   #'make-uri-ftp)
     ((string= scheme "file")  #'make-uri-file)
     ((string= scheme "urn")   #'make-urn)
-    (T                        #'make-basic-uri)))
+    (t                        #'make-basic-uri)))
 
 (defun uri (data &key (start 0) end)
   (if (uri-p data)
@@ -173,7 +173,7 @@
              "~@[~(~A~)://~]~@[~(~a~)~]"
              (uri-scheme uri)
              (uri-path uri)))
-    (T
+    (t
      (format stream
              "~@[~(~A~):~]~@[//~(~A~)~]~@[~A~]~@[?~A~]~@[#~A~]"
              (uri-scheme uri)
