@@ -73,6 +73,8 @@
 
            :uri-http
            :uri-http-p
+           :uri-https
+           :uri-https-p
            :uri-query-params
 
            :uri-ldap
