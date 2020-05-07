@@ -34,4 +34,6 @@
     (url-decode-params query)))
 
 (defun (setf uri-query-params) (new http)
-  (setf (uri-query http) (url-encode-params new)))
+  (setf (uri-query http) (if new
+			     (url-encode-params new)
+			     nil)))
