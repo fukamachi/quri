@@ -161,7 +161,7 @@
   (cond
     ((uri-ftp-p uri)
      (format stream
-             "~@[~(~A~):~]~@[//~(~A~)~]~@[~A~]~@[;type=~A~]~@[?~A~]~@[#~A~]"
+             "~@[~(~A~):~]~@[//~A~]~@[~A~]~@[;type=~A~]~@[?~A~]~@[#~A~]"
              (uri-scheme uri)
              (uri-authority uri)
              (uri-path uri)
@@ -170,12 +170,12 @@
              (uri-fragment uri)))
     ((uri-file-p uri)
      (format stream
-             "~@[~(~A~)://~]~@[~(~a~)~]"
+             "~@[~(~A~)://~]~@[~A~]"
              (uri-scheme uri)
              (uri-path uri)))
     (t
      (format stream
-             "~@[~(~A~):~]~@[//~(~A~)~]~@[~A~]~@[?~A~]~@[#~A~]"
+             "~@[~(~A~):~]~@[//~A~]~@[~A~]~@[?~A~]~@[#~A~]"
              (uri-scheme uri)
              (uri-authority uri)
              (uri-path uri)
