@@ -90,7 +90,6 @@
                                               (1+ parse-end)))
                        (maybe-fragment-start (or (nth-value 1 (parse-fragment-string data :start end :end parse-end))
                                                  (1+ parse-end))))
-                   (log:info maybe-query-start maybe-fragment-start)
                    (flet ((parse-fragment (path-end)
                             (multiple-value-bind (data start end)
                                 (parse-fragment-string data :start (or path-end end) :end parse-end)
