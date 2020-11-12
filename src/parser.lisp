@@ -84,14 +84,25 @@
                           (type fixnum start end))
                  (unless (= start end)
                    (setq path (subseq data start end)))
-                 (multiple-value-bind (parsed-data path-start path-end)
-                     (parse-query-string data :start end :end parse-end)
-                   (when parsed-data
-                     (setq query (subseq (the string parsed-data) (the fixnum path-start) (the fixnum path-end))))
-                   (multiple-value-bind (data start end)
-                       (parse-fragment-string data :start (or path-end end) :end parse-end)
-                     (when data
-                       (setq fragment (subseq (the string data) (the fixnum start) (the fixnum end)))))))))
+                 ;; Pitfall: There may be no query but a fragment that has a '?', e.g.
+                 ;; https://example.org/#/?b
+                 (let ((maybe-query-start (or (nth-value 1 (parse-query-string data :start end :end parse-end))
+                                              (1+ parse-end)))
+                       (maybe-fragment-start (or (nth-value 1 (parse-fragment-string data :start end :end parse-end))
+                                                 (1+ parse-end))))
+                   (log:info maybe-query-start maybe-fragment-start)
+                   (flet ((parse-fragment (path-end)
+                            (multiple-value-bind (data start end)
+                                (parse-fragment-string data :start (or path-end end) :end parse-end)
+                              (when data
+                                (setq fragment (subseq (the string data) (the fixnum start) (the fixnum end)))))))
+                     (if (< (the fixnum maybe-query-start) (the fixnum maybe-fragment-start))
+                         (multiple-value-bind (parsed-data path-start path-end)
+                             (parse-query-string data :start end :end parse-end)
+                           (when parsed-data
+                             (setq query (subseq (the string parsed-data) (the fixnum path-start) (the fixnum path-end))))
+                           (parse-fragment path-end))
+                         (parse-fragment end)))))))
         (multiple-value-bind (parsed-data start end got-scheme)
             (parse-scheme-string data :start parse-start :end parse-end)
           (unless parsed-data
