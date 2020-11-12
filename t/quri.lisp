@@ -98,7 +98,8 @@
     (,(uri "../bar") . "http://www.example.com/path/bar")
     (,(uri "other/./car") . "http://www.example.com/path/a/other/car")
     (,(uri "./../.") . "http://www.example.com/path/")
-    (,(make-uri :query "name=fukamachi") . "http://www.example.com/path/a/b.html?name=fukamachi")))
+    (,(make-uri :query "name=fukamachi") . "http://www.example.com/path/a/b.html?name=fukamachi")
+    (,(make-uri :scheme "https" :host "foo.com" :path "foo/bar") . "https://foo.com/foo/bar")))
 
 (subtest "merge-uris"
   (loop for (test-uri . result-uri) in *merge-test-cases* do
