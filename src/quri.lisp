@@ -73,6 +73,8 @@
 
            :uri-http
            :uri-http-p
+           :uri-https
+           :uri-https-p
            :uri-query-params
 
            :uri-ldap
@@ -158,29 +160,34 @@
         (apply (scheme-constructor scheme) initargs))))
 
 (defun render-uri (uri &optional stream)
-  (cond
-    ((uri-ftp-p uri)
-     (format stream
-             "~@[~(~A~):~]~@[//~(~A~)~]~@[~A~]~@[;type=~A~]~@[?~A~]~@[#~A~]"
-             (uri-scheme uri)
-             (uri-authority uri)
-             (uri-path uri)
-             (uri-ftp-typecode uri)
-             (uri-query uri)
-             (uri-fragment uri)))
-    ((uri-file-p uri)
-     (format stream
-             "~@[~(~A~)://~]~@[~a~]"
-             (uri-scheme uri)
-             (uri-path uri)))
-    (t
-     (format stream
-             "~@[~(~A~):~]~@[//~(~A~)~]~@[~A~]~@[?~A~]~@[#~A~]"
-             (uri-scheme uri)
-             (uri-authority uri)
-             (uri-path uri)
-             (uri-query uri)
-             (uri-fragment uri)))))
+  (flet ((ensure-leading-slash (s)
+           (when s
+             (if (string= (subseq s 0 1) "/")
+                 s
+                 (format nil "/~A" s)))))
+    (cond
+      ((uri-ftp-p uri)
+       (format stream
+               "~@[~(~A~):~]~@[//~A~]~@[~A~]~@[;type=~A~]~@[?~A~]~@[#~A~]"
+               (uri-scheme uri)
+               (uri-authority uri)
+               (ensure-leading-slash (uri-path uri))
+               (uri-ftp-typecode uri)
+               (uri-query uri)
+               (uri-fragment uri)))
+      ((uri-file-p uri)
+       (format stream
+               "~@[~(~A~)://~]~@[~A~]"
+               (uri-scheme uri)
+               (uri-path uri)))
+      (t
+       (format stream
+               "~@[~(~A~):~]~@[//~A~]~@[~A~]~@[?~A~]~@[#~A~]"
+               (uri-scheme uri)
+               (uri-authority uri)
+               (ensure-leading-slash (uri-path uri))
+               (uri-query uri)
+               (uri-fragment uri))))))
 
 (defun uri= (uri1 uri2)
   (check-type uri1 uri)
