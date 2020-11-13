@@ -1,9 +1,5 @@
 # QURI
 
-**Fork notices:** This is a temporary fork that fixes a few important issues.
-Please follow https://github.com/fukamachi/quri once the maintenance of upstream
-has resumed.
-
 [![Build Status](https://travis-ci.org/fukamachi/quri.svg?branch=master)](https://travis-ci.org/fukamachi/quri)
 [![Coverage Status](https://coveralls.io/repos/fukamachi/quri/badge.svg?branch=master)](https://coveralls.io/r/fukamachi/quri)
 
