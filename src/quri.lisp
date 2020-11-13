@@ -170,7 +170,7 @@
              (uri-fragment uri)))
     ((uri-file-p uri)
      (format stream
-             "~@[~(~A~)://~]~@[~(~a~)~]"
+             "~@[~(~A~)://~]~@[~a~]"
              (uri-scheme uri)
              (uri-path uri)))
     (t
