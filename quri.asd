@@ -7,11 +7,6 @@
   Author: Eitaro Fukamachi (e.arrows@gmail.com)
 |#
 
-(in-package :cl-user)
-(defpackage quri-asd
-  (:use :cl :asdf))
-(in-package :quri-asd)
-
 (defsystem quri
   :version "0.1.0"
   :author "Eitaro Fukamachi"

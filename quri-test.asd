@@ -3,11 +3,6 @@
   Copyright (c) 2014 Eitaro Fukamachi (e.arrows@gmail.com)
 |#
 
-(in-package :cl-user)
-(defpackage quri-test-asd
-  (:use :cl :asdf))
-(in-package :quri-test-asd)
-
 (defsystem quri-test
   :author "Eitaro Fukamachi"
   :license "BSD 3-Clause"
