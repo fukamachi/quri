@@ -160,18 +160,20 @@
         (apply (scheme-constructor scheme) initargs))))
 
 (defun render-uri (uri &optional stream)
-  (flet ((ensure-leading-slash (s)
-           (when s
-             (if (string= (subseq s 0 1) "/")
-                 s
-                 (format nil "/~A" s)))))
+  (flet ((maybe-slash (authority path)
+           (if (and authority path
+                    (string/= (subseq authority (1- (length authority))) "/")
+                    (string/= (subseq path 0 1) "/"))
+               "/"
+               "")))
     (cond
       ((uri-ftp-p uri)
        (format stream
-               "~@[~(~A~):~]~@[//~A~]~@[~A~]~@[;type=~A~]~@[?~A~]~@[#~A~]"
+               "~@[~(~A~):~]~@[//~A~]~a~@[~A~]~@[;type=~A~]~@[?~A~]~@[#~A~]"
                (uri-scheme uri)
                (uri-authority uri)
-               (ensure-leading-slash (uri-path uri))
+               (maybe-slash (uri-authority uri) (uri-path uri))
+               (uri-path uri)
                (uri-ftp-typecode uri)
                (uri-query uri)
                (uri-fragment uri)))
@@ -182,10 +184,11 @@
                (uri-path uri)))
       (t
        (format stream
-               "~@[~(~A~):~]~@[//~A~]~@[~A~]~@[?~A~]~@[#~A~]"
+               "~@[~(~A~):~]~@[//~A~]~a~@[~A~]~@[?~A~]~@[#~A~]"
                (uri-scheme uri)
                (uri-authority uri)
-               (ensure-leading-slash (uri-path uri))
+               (maybe-slash (uri-authority uri) (uri-path uri))
+               (uri-path uri)
                (uri-query uri)
                (uri-fragment uri))))))
 
