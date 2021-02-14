@@ -104,13 +104,14 @@
                          (parse-fragment end)))))))
         (multiple-value-bind (parsed-data start end got-scheme)
             (parse-scheme-string data :start parse-start :end parse-end)
-          (unless parsed-data
-            ;; assume this is a relative uri.
-            (return (parse-from-path data parse-start)))
-          (locally (declare (type fixnum start end))
-            (setq scheme
-                  (or got-scheme
-                      (string-downcase (subseq data start end))))
+          (if parsed-data
+              (locally (declare (type fixnum start end))
+                (setq scheme
+                      (or got-scheme
+                          (string-downcase (subseq data start end)))))
+              (setq scheme nil
+                    end parse-start))
+          (locally (declare (type fixnum end))
             (unless (= end parse-end)
               (multiple-value-bind (parsed-data userinfo-start userinfo-end
                                     host-start host-end port-start port-end)
@@ -181,11 +182,9 @@
                          (setq fragment (subseq* data (the fixnum start) (the fixnum end)))))))))
           (multiple-value-bind (parsed-data start end got-scheme)
               (parse-scheme-byte-vector data :start parse-start :end parse-end)
-            (unless parsed-data
-              ;; assume this is a relative uri.
-              (return (parse-from-path data parse-start)))
-            (locally (declare (type fixnum start end))
-              (setq scheme
+            (if parsed-data
+                (locally (declare (type fixnum start end))
+                  (setq scheme
                     (or got-scheme
                         (let ((data-str (make-string (- end start))))
                           (do ((i start (1+ i))
@@ -196,7 +195,10 @@
                                     (code-char
                                      (if (<= #.(char-code #\A) code #.(char-code #\Z))
                                          (+ code 32)
-                                         code))))))))
+                                         code)))))))))
+                (setq scheme nil
+                      end parse-start))
+            (locally (declare (type fixnum end))
               (unless (= end parse-end)
                 (multiple-value-bind (parsed-data userinfo-start userinfo-end
                                       host-start host-end port-start port-end)

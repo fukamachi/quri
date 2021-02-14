@@ -62,7 +62,9 @@
     ("http://" .
      ("http" nil nil nil nil nil))
     ("foo:/a/b/c" .
-     ("foo" nil nil "/a/b/c" nil nil))))
+     ("foo" nil nil "/a/b/c" nil nil))
+    ("//foo/bar" .
+     (nil nil "foo" "/bar" nil nil))))
 
 (loop for (test-uri . params) in *test-cases* do
   (subtest (format nil "~A (string)" test-uri)
