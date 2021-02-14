@@ -60,7 +60,11 @@
     ("tel:+31-641044153" .
      ("tel" nil nil "+31-641044153" nil nil))
     ("http://" .
-     ("http" nil nil nil nil nil))))
+     ("http" nil nil nil nil nil))
+    ("foo:/a/b/c" .
+     ("foo" nil nil "/a/b/c" nil nil))
+    ("//foo/bar" .
+     (nil nil "foo" "/bar" nil nil))))
 
 (loop for (test-uri . params) in *test-cases* do
   (subtest (format nil "~A (string)" test-uri)
