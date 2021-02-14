@@ -368,7 +368,8 @@
 
   (parsing-authority-starting
    (unless (char=* char #\/)
-     (error 'uri-malformed-string :data data :position p))
+     (return-from parse-authority
+        (values data nil nil start start nil nil)))
    (gonext))
 
   (parsing-authority-start
