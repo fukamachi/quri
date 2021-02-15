@@ -3,7 +3,8 @@
   (:use :cl)
   (:import-from :alexandria
                 :with-gensyms)
-  (:export :standard-alpha-char-p
+  (:export :simple-byte-vector
+           :standard-alpha-char-p
            :standard-alpha-byte-p
            :standard-alphanumeric-p
            :standard-alphanumeric-byte-p
@@ -14,6 +15,8 @@
            :gonext
            :goto))
 (in-package :quri.util)
+
+(deftype simple-byte-vector (&optional (len '*)) `(simple-array (unsigned-byte 8) (,len)))
 
 (defun standard-alpha-char-p (char)
   (declare (type character char)

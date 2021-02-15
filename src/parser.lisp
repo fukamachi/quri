@@ -20,8 +20,6 @@
            :parse-fragment))
 (in-package :quri.parser)
 
-(deftype simple-byte-vector (&optional (len '*)) `(simple-array (unsigned-byte 8) (,len)))
-
 (declaim (type (simple-array fixnum (128)) +uri-char+))
 (define-constant +uri-char+
     (let ((uri-char (make-array 128 :element-type 'fixnum :initial-element 0)))

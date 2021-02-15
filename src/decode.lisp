@@ -34,7 +34,7 @@
                           (start 0)
                           end
                           (lenient nil))
-  (declare (type (or string (simple-array (unsigned-byte 8) (*))) data)
+  (declare (type (or string simple-byte-vector) data)
            (type integer start)
            (optimize (speed 3) (safety 2)))
   (let* ((end (or end (length data)))
@@ -43,7 +43,7 @@
          (i 0)
          parsing-encoded-part)
     (declare (type integer end i)
-             (type (simple-array (unsigned-byte 8)) buffer))
+             (type simple-byte-vector buffer))
     (flet ((write-to-buffer (byte)
              (declare (optimize (speed 3) (safety 0)))
              (setf (aref buffer i) byte)
@@ -92,7 +92,7 @@
                                  (start 0)
                                  end
                                  (lenient nil))
-  (declare (type (or string (simple-array (unsigned-byte 8) (*))) data)
+  (declare (type (or string simple-byte-vector) data)
            (type integer start)
            (type character delimiter)
            (optimize (speed 3) (safety 2)))

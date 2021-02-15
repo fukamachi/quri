@@ -1,6 +1,7 @@
 (in-package :cl-user)
 (defpackage quri.encode
-  (:use :cl)
+  (:use :cl
+        :quri.util)
   (:import-from :babel-encodings
                 :*default-character-encoding*)
   (:export :url-encode
@@ -47,7 +48,7 @@
                           (start 0)
                           end
                           space-to-plus)
-  (declare (type (or string (simple-array (unsigned-byte 8) (*))) data)
+  (declare (type (or string simple-byte-vector) data)
            (type integer start)
            (optimize (speed 3) (safety 2)))
   (let* ((octets (if (stringp data)
@@ -55,7 +56,7 @@
                      data))
          (res (make-array (* (length octets) 3) :element-type 'character :fill-pointer t))
          (i 0))
-    (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+    (declare (type simple-byte-vector octets)
              (type string res)
              (type integer i))
     (loop for byte of-type (unsigned-byte 8) across octets do
