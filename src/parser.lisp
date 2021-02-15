@@ -168,7 +168,7 @@
                  (declare (type simple-byte-vector data)
                           (type fixnum start))
                  (multiple-value-bind (data start end)
-                     (parse-path-byte-vector data :start start)
+                     (parse-path-byte-vector data :start start :end parse-end)
                    (declare (type fixnum start end))
                    (unless (= start end)
                      (setq path (subseq* data start end)))
