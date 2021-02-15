@@ -79,7 +79,7 @@
                (declare (type simple-string data)
                         (type fixnum start))
                (multiple-value-bind (data start end)
-                   (parse-path-string data :start start)
+                   (parse-path-string data :start start :end parse-end)
                  (declare (type simple-string data)
                           (type fixnum start end))
                  (unless (= start end)
