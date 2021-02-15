@@ -17,6 +17,10 @@
 
 (subtest "url-encode-params"
   (is (url-encode-params '(("a" . "b") ("c" . "d")))
-      "a=b&c=d"))
+      "a=b&c=d")
+  (is (url-encode-params
+       `(("a" . ,(make-array 1 :element-type '(unsigned-byte 8)
+                               :initial-contents (list (char-code #\b))))))
+      "a=b"))
 
 (finalize)
