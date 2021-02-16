@@ -10,16 +10,19 @@
 
 ## Differences from PURI
 
-- Fast. (See [Benchmark](#benchmark))
+- Fast. (See [Benchmark](#benchmark).)
 - Doesn't encode/decode URL implicitly.
 - UTF-8 characters support.
-- Supports userinfo. (ex. `git` in `git@github.com`)
-- Supports IPv6 hostname. (ex. `ldap://[2001:db8::7]/`)
+- Supports userinfo. (Example: `git` in `git@github.com`)
+- Supports IPv6 hostname. (Example: `ldap://[2001:db8::7]/`)
 - Allows byte vectors as input.
 - Takes optional `:start` and `:end` keyword arguments.
 - Low-level parser functions.
 - URL encoding/decoding utilities.
-  - `url-decode`, `url-decode-params`, `url-encode`, `url-encode-params`
+  - `url-decode`
+  - `url-decode-params`
+  - `url-encode`
+  - `url-encode-params`
 
 ## Usage
 
@@ -366,9 +369,10 @@ Evaluation took:
   219,186,768 bytes consed
 ```
 
-## Author
+## Authors and maintainers
 
-* Eitaro Fukamachi (e.arrows@gmail.com)
+* Eitaro Fukamachi (e.arrows@gmail.com): author
+* Pierre Neidhardt (mail@ambrevar.xyz): maintainer
 
 ## Copyright
 
