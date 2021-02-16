@@ -2,6 +2,7 @@
 (defpackage quri.parser
   (:use :cl
         :quri.error
+        :quri.port
         :quri.util)
   #+(or sbcl openmcl cmu allegro)
   (:import-from #+sbcl :sb-cltl2
@@ -120,15 +121,18 @@
                       (setq userinfo (subseq (the string data) (the fixnum userinfo-start) (the fixnum userinfo-end))))
                     (unless (= host-start host-end)
                       (setq host (subseq data host-start host-end)))
-                    (when port-start
-                      (locally (declare (type fixnum port-start port-end))
-                        (unless (= port-start port-end)
-                          (handler-case
-                              (setq port
-                                    (parse-integer data :start (the fixnum port-start) :end (the fixnum port-end)))
-                            (error ()
-                              (error 'uri-invalid-port
-                                     :data data :position port-start))))))))
+                    (cond
+                      (port-start
+                       (locally (declare (type fixnum port-start port-end))
+                         (unless (= port-start port-end)
+                           (handler-case
+                               (setq port
+                                     (parse-integer data :start (the fixnum port-start) :end (the fixnum port-end)))
+                             (error ()
+                               (error 'uri-invalid-port
+                                      :data data :position port-start))))))
+                      (scheme
+                       (setq port (scheme-default-port scheme))))))
                 (locally (declare (optimize (safety 0)))
                   (parse-from-path data (or port-end host-end (1+ end))))))))))
     (values scheme userinfo host port path query fragment)))
