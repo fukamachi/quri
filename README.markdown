@@ -376,7 +376,7 @@ Evaluation took:
 
 ## Copyright
 
-Copyright (c) 2014 Eitaro Fukamachi (e.arrows@gmail.com)
+Copyright (c) 2014-2019 Eitaro Fukamachi (e.arrows@gmail.com)
 
 ## License
 
