@@ -67,7 +67,7 @@ Create a `uri` object.
 ;=> #<QURI.URI.HTTP:URI-HTTP http://8arrow.org/>
 
 (make-uri :defaults "http://8arrow.org"
-          :query '(("guest" . 1)))
+          :query '(("guest" . "1")))
 ;=> #<QURI.URI.HTTP:URI-HTTP http://8arrow.org?guest=1>
 ```
 

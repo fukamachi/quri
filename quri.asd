@@ -24,7 +24,7 @@
                  (:file "etld")
                  (:file "parser" :depends-on ("error" "util"))
                  (:file "decode" :depends-on ("error" "util"))
-                 (:file "encode")
+                 (:file "encode" :depends-on ("error" "util"))
                  (:file "port")
                  (:file "util")
                  (:file "error"))))
