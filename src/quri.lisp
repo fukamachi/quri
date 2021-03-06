@@ -161,9 +161,9 @@
 
 (defun render-uri (uri &optional stream)
   (flet ((maybe-slash (authority path)
-           (if (and authority path
-                    (string/= (subseq authority (1- (length authority))) "/")
-                    (string/= (subseq path 0 1) "/"))
+           (if (and (not (uiop:emptyp authority)) (not (uiop:emptyp path))
+                    (char/= (uiop:last-char authority) #\/)
+                    (char/= (uiop:first-char path) #\/))
                "/"
                "")))
     (cond
