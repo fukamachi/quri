@@ -22,7 +22,7 @@
   (let ((ftp (apply #'%make-uri-ftp initargs)))
     (multiple-value-bind (path typecode)
         (parse-ftp-typecode (uri-path ftp))
-      (when path
+      (unless (uiop:emptyp path)
         (setf (uri-path ftp) path
               (uri-ftp-typecode ftp) typecode)))
     ftp))

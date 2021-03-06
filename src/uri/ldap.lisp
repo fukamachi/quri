@@ -34,7 +34,7 @@
 
 (defun uri-ldap-dn (ldap)
   (let ((path (uri-path ldap)))
-    (when (and path
+    (when (and (not (uiop:emptyp path))
                (/= 0 (length path)))
       (if (char= (aref path 0) #\/)
           (subseq path 1)
