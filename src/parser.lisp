@@ -212,9 +212,12 @@
                         (setq userinfo (subseq* data (the fixnum userinfo-start) (the fixnum userinfo-end))))
                       (unless (= host-start host-end)
                         (setq host (subseq* data host-start host-end)))
-                      (when port-start
-                        (setq port
-                              (parse-integer-from-bv data :start port-start :end port-end)))))
+                      (cond
+                        (port-start
+                         (setq port
+                               (parse-integer-from-bv data :start port-start :end port-end)))
+                        (scheme
+                         (setq port (scheme-default-port scheme))))))
                   (locally (declare (optimize (safety 0)))
                     (parse-from-path data (or port-end host-end (1+ end)))))))))))
     (values scheme userinfo host port path query fragment)))
