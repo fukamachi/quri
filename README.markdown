@@ -369,6 +369,18 @@ Evaluation took:
   219,186,768 bytes consed
 ```
 
+## Change log
+
+### 0.3.0
+
+- Handle strings and byte vectors in query values, and nothing else.
+
+  In particular, numbers are no longer supported.  You'll have to convert them
+  to a string or a byte-vector from the caller.
+
+- `parse-uri-string` and `parse-uri-byte-vector` now return the scheme default
+  port when unspecified.
+
 ## Authors and maintainers
 
 * Eitaro Fukamachi (e.arrows@gmail.com): author
