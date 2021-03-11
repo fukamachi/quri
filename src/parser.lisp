@@ -81,8 +81,9 @@
                    (parse-path-string data :start start :end parse-end)
                  (declare (type simple-string data)
                           (type fixnum start end))
-                 (unless (= start end)
-                   (setq path (subseq data start end)))
+                 (setq path (if (= start end)
+                                ""
+                                (subseq data start end)))
                  ;; Pitfall: There may be no query but a fragment that has a '?', e.g.
                  ;; https://example.org/#/?b
                  (let ((maybe-query-start (or (nth-value 1 (parse-query-string data :start end :end parse-end))
