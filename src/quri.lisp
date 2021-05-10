@@ -255,10 +255,13 @@ mutated."
     (let ((uri (copy-uri reference :scheme (uri-scheme base))))
       (when (null (uri-port uri))
         (setf (uri-port uri) (scheme-default-port (uri-scheme uri))))
-      (macrolet ((done () '(return-from merge-uris uri)))
+      (flet ((done () (return-from merge-uris uri))
+             (remove-dot-segments ()
+               (setf (uri-path uri) (merge-uri-paths (uri-path uri) nil))))
 
         ;; Step 4 -- Authority
         (when (uri-host uri)
+          (remove-dot-segments)
           (done))
         (setf (uri-userinfo uri) (uri-userinfo base))
         (setf (uri-host uri) (uri-host base))
@@ -272,8 +275,9 @@ mutated."
         ;; Step 6 -- Absolute path
         (alexandria:when-let* ((p (uri-path uri))
                                (first-char (and (> (length p) 0) (char p 0))))
-                              (when (char= #\/ first-char)
-                                (done)))
+          (when (char= #\/ first-char)
+            (remove-dot-segments)
+            (done)))
 
         ;; Step 7 -- Relative path
         (setf (uri-path uri) (merge-uri-paths (uri-path uri) (uri-path base)))
