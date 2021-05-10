@@ -135,7 +135,7 @@
                       (scheme
                        (setq port (scheme-default-port scheme))))))
                 (locally (declare (optimize (safety 0)))
-                  (parse-from-path data (or port-end host-end (1+ end))))))))))
+                  (parse-from-path data (or port-end host-end end)))))))))
     (values scheme userinfo host port path query fragment)))
 
 (defun parse-uri-byte-vector (data &key (start 0) end)
@@ -376,10 +376,10 @@
    (unless (char=* char #\/)
      (return-from parse-authority
         (values data nil nil start start nil nil)))
+   (setq authority-mark (1+ p))
    (gonext))
 
   (parsing-authority-start
-   (setq authority-mark p)
    (if (char=* char #\[)
        (goto parsing-ipliteral)
        (gonext 0)))
@@ -419,7 +419,7 @@
      (return-from parse-authority
        (values data
                nil nil
-               p p
+               start start
                nil nil)))
    (if colon-mark
        (setq host-start authority-mark
