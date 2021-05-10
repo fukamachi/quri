@@ -63,6 +63,8 @@
      ("http" nil nil nil nil nil))
     ("foo:/a/b/c" .
      ("foo" nil nil "/a/b/c" nil nil))
+    ("foo::" .
+     ("foo" nil nil ":" nil nil))
     ("//foo/bar" .
      (nil nil "foo" "/bar" nil nil))))
 

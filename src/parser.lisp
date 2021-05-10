@@ -107,7 +107,8 @@
               (locally (declare (type fixnum start end))
                 (setq scheme
                       (or got-scheme
-                          (string-downcase (subseq data start end)))))
+                          (string-downcase (subseq data start end))))
+                (incf end))             ;eat the trailing #\:
               (setq scheme nil
                     end parse-start))
           (locally (declare (type fixnum end))
@@ -197,7 +198,8 @@
                                     (code-char
                                      (if (<= #.(char-code #\A) code #.(char-code #\Z))
                                          (+ code 32)
-                                         code)))))))))
+                                         code))))))))
+                  (incf end))           ;eat the trailing #\:
                 (setq scheme nil
                       end parse-start))
             (locally (declare (type fixnum end))
@@ -364,9 +366,6 @@
                                                 port-end)
   (parsing-first
    (cond
-     ((char=* char #\:)
-      (incf start)
-      (redo))
      ((char=* char #\/)
       (gonext))
      (t
