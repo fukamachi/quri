@@ -61,6 +61,14 @@
       (t form))))
 
 (defun parse-uri (data &key (start 0) end)
+  "Parse a URI string or a URI byte vector and return 7 URI components:
+- scheme,
+- userinfo,
+- host name,
+- port,
+- path,
+- query,
+- fragment."
   (etypecase data
     (simple-string (parse-uri-string data :start start :end end))
     (simple-byte-vector (parse-uri-byte-vector data :start start :end end))

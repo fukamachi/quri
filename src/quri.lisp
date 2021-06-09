@@ -239,12 +239,12 @@
                 (write-char #\/ s)))))))
 
 (defun merge-uris (reference base)
+  "Merge a reference URI into the base URI as described in RFC 2396 Section 5.2.
+The returned URI may or may not be a new instance. Neither REFERENCE nor BASE is
+mutated."
   (let ((reference (uri reference))
         (base (uri base)))
     (declare (uri reference base))
-    "Merge a reference URI into the base URI as described in RFC 2396 Section 5.2.
-The returned URI may or may not be a new instance. Neither REFERENCE nor BASE is
-mutated."
     ;; Step 2 -- return base if same document
     (when (uri= reference base)
       (return-from merge-uris base))
