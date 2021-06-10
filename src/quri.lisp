@@ -44,6 +44,7 @@
            :make-uri
            :uri
            :uri=
+           :uri-equal
            :uri-p
            :uri-scheme
            :uri-userinfo
@@ -192,19 +193,30 @@
                (uri-query uri)
                (uri-fragment uri))))))
 
-(defun uri= (uri1 uri2)
+(defun %uri= (uri1 uri2 &key normalize-path-p)
   (check-type uri1 uri)
   (check-type uri2 uri)
   (when (eq (type-of uri1) (type-of uri2))
     (and (equalp (uri-scheme uri1)    (uri-scheme uri2))
-         ;; An empty path should be normalized to a path of "/".
-         ;; RFC 3986 (https://tools.ietf.org/html/rfc3986#section-6.2.3)
-         (equal  (or (uri-path uri1) "/") (or (uri-path uri2) "/"))
+         (equal  (or (uri-path uri1) (when normalize-path-p "/"))
+                 (or (uri-path uri2) (when normalize-path-p "/")))
          (equal  (uri-query uri1)     (uri-query uri2))
          (equal  (uri-fragment uri1)  (uri-fragment uri2))
          (equalp (uri-authority uri1) (uri-authority uri2))
          (or (not (uri-ftp-p uri1))
              (eql (uri-ftp-typecode uri1) (uri-ftp-typecode uri2))))))
+
+(defun uri= (uri1 uri2)
+  "Whether URI1 refers to the same URI as URI2.
+Paths are not normalized. See `uri-equal'."
+  (%uri= uri1 uri2))
+
+(defun uri-equal (uri1 uri2)
+  "Whether URI1 refers to the same URI as URI2.
+Empty paths are normalized to '/' as per RFC 3986
+(https://tools.ietf.org/html/rfc3986#section-6.2.3).
+See `uri='."
+  (%uri= uri1 uri2  :normalize-path-p t))
 
 (defmethod print-object ((uri uri) stream)
   (if (and (null *print-readably*) (null *print-escape*))
@@ -246,7 +258,7 @@ mutated."
         (base (uri base)))
     (declare (uri reference base))
     ;; Step 2 -- return base if same document
-    (when (uri= reference base)
+    (when (uri-equal reference base)
       (return-from merge-uris base))
 
     ;; Step 3 -- scheme

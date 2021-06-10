@@ -8,7 +8,7 @@
 (plan nil)
 
 (subtest "uri="
-  (let ((prove:*default-test-function* #'uri=))
+  (let ((prove:*default-test-function* #'uri-equal))
     (is (uri "http://b.hatena.ne.jp")
         (uri "http://b.hatena.ne.jp:80"))
     (is (uri "http://b.hatena.ne.jp")
@@ -24,7 +24,10 @@
         (uri "mailto:Joe@example.com"))
     #+todo
     (is (uri "mailto:Postmaster@example.com")
-        (uri "mailto:POSTMASTER@example.com"))))
+        (uri "mailto:POSTMASTER@example.com")))
+  (let ((prove:*default-test-function* #'uri=))
+    (isnt (uri "http://b.hatena.ne.jp")
+          (uri "http://b.hatena.ne.jp/"))))
 
 (defparameter *test-cases*
   '(("file:///tmp/junk.txt" .
