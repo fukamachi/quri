@@ -261,17 +261,21 @@ mutated."
     (when (uri-equal reference base)
       (return-from merge-uris base))
 
-    ;; Step 3 -- scheme
-    (when (uri-scheme reference)
-      (return-from merge-uris reference))
-    (let ((uri (copy-uri reference :scheme (uri-scheme base))))
-      (when (null (uri-port uri))
-        (setf (uri-port uri) (scheme-default-port (uri-scheme uri))))
+    (let ((uri (copy-uri reference)))
       (flet ((done () (return-from merge-uris uri))
              (remove-dot-segments ()
                (setf (uri-path uri) (merge-uri-paths (uri-path uri) nil))))
 
+        ;; Step 3 -- scheme
+        (when (uri-scheme uri)
+          (remove-dot-segments)
+          (done))
+        (setf (uri-scheme uri) (uri-scheme base))
+
         ;; Step 4 -- Authority
+        (when (null (uri-port uri))
+          (setf (uri-port uri) (scheme-default-port (uri-scheme uri))))
+
         (when (uri-host uri)
           (remove-dot-segments)
           (done))
