@@ -1,5 +1,5 @@
 (defsystem "quri"
-  :version "0.3.0"
+  :version "0.4.0"
   :author "Eitaro Fukamachi"
   :maintainer "Pierre Neidhardt"
   :license "BSD 3-Clause"

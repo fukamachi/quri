@@ -371,6 +371,20 @@ Evaluation took:
 
 ## Change log
 
+### 0.4.0
+
+- Query values accept numbers again.
+  This should fix backward-compatibility issues.
+
+- New `uri-equal` which normalizes the path when comparing URIs.
+
+- The empty path and the root path are no longer equal with `uri=`.  Use
+  `uri-equal` if you want the old behaviour.
+
+- Dot segments are removed when merging URLs.
+
+- Fix parsing of the colon at the end of the scheme.
+
 ### 0.3.0
 
 - Handle strings and byte vectors in query values, and nothing else.
