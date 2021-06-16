@@ -132,4 +132,9 @@
        (let ((merged-uri (merge-uris test-uri *base-uri*)))
          (is (render-uri merged-uri) result-uri :test 'string=))))
 
+(subtest "render-uri"
+  (is (let* ((*print-base* 2))
+        (render-uri (uri "//foo:80?a=5")))
+      "//foo:80?a=5"))
+
 (finalize)
