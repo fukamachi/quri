@@ -47,11 +47,12 @@
 (defun uri-authority (uri)
   (when (uri-host uri)
     (let ((default-port (scheme-default-port (uri-scheme uri))))
-      (format nil "~:[~;~:*~A@~]~A~:[:~A~;~*~]"
-              (uri-userinfo uri)
-              (uri-host uri)
-              (eql (uri-port uri) default-port)
-              (uri-port uri)))))
+      (with-standard-io-syntax
+        (format nil "~:[~;~:*~A@~]~A~:[:~A~;~*~]"
+                (uri-userinfo uri)
+                (uri-host uri)
+                (eql (uri-port uri) default-port)
+                (uri-port uri))))))
 
 (defstruct (urn (:include uri (scheme :urn))
                 (:constructor %make-urn))

@@ -23,6 +23,9 @@
                                :initial-contents (list (char-code #\b))))))
       "a=b")
   (is (url-encode-params '(("a" . "b") ("c" . 1)))
-      "a=b&c=1"))
+      "a=b&c=1")
+  (is (let ((*print-base* 2))
+        (url-encode-params '(("a" . 5))))
+      "a=5"))
 
 (finalize)
