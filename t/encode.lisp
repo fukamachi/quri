@@ -21,6 +21,8 @@
   (is (url-encode-params
        `(("a" . ,(make-array 1 :element-type '(unsigned-byte 8)
                                :initial-contents (list (char-code #\b))))))
-      "a=b"))
+      "a=b")
+  (is (url-encode-params '(("a" . "b") ("c" . 1)))
+      "a=b&c=1"))
 
 (finalize)
