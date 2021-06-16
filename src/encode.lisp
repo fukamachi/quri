@@ -97,8 +97,10 @@
       (write-string (url-encode field :encoding encoding :space-to-plus space-to-plus) s)
       (when value
         (write-char #\= s)
-        (check-type value (or string simple-byte-vector))
-        (write-string (url-encode value
+        (check-type value (or string number simple-byte-vector))
+        (write-string (url-encode (if (numberp value)
+                                      (write-to-string value)
+                                      value)
                                   :encoding encoding
                                   :space-to-plus space-to-plus)
                       s))
