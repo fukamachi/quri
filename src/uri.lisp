@@ -23,7 +23,7 @@
 (in-package :quri.uri)
 
 (defstruct (uri (:constructor %make-uri))
-  scheme
+  (scheme nil :read-only t)
   userinfo
   host
   port

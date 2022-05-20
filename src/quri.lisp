@@ -269,7 +269,7 @@ mutated."
       (when (uri-scheme merged-uri)
           (merge-paths)
           (return-merged-uri))
-      (setf (uri-scheme merged-uri) (uri-scheme base))
+      (setf merged-uri (copy-uri merged-uri :scheme (uri-scheme base)))
       ;; Step 4
       (when (null (uri-port merged-uri))
         (setf (uri-port merged-uri) (scheme-default-port (uri-scheme merged-uri))))
