@@ -252,51 +252,44 @@ See `uri='."
 
 (defun merge-uris (reference base)
   "Merge a reference URI into the base URI as described in RFC 2396 Section 5.2.
-The returned URI may or may not be a new instance. Neither REFERENCE nor BASE is
+The returned URI is always a new instance. Neither REFERENCE nor BASE is
 mutated."
-  (let ((reference (uri reference))
-        (base (uri base)))
-    (declare (uri reference base))
-    ;; Step 2 -- return base if same document
-    (when (uri-equal reference base)
-      (return-from merge-uris base))
-
-    (let ((uri (copy-uri reference)))
-      (flet ((done () (return-from merge-uris uri))
-             (remove-dot-segments ()
-               (setf (uri-path uri) (merge-uri-paths (uri-path uri) nil))))
-
-        ;; Step 3 -- scheme
-        (when (uri-scheme uri)
-          (remove-dot-segments)
-          (done))
-        (setf (uri-scheme uri) (uri-scheme base))
-
-        ;; Step 4 -- Authority
-        (when (null (uri-port uri))
-          (setf (uri-port uri) (scheme-default-port (uri-scheme uri))))
-
-        (when (uri-host uri)
-          (remove-dot-segments)
-          (done))
-        (setf (uri-userinfo uri) (uri-userinfo base))
-        (setf (uri-host uri) (uri-host base))
-        (setf (uri-port uri) (uri-port base))
-
-        ;; Step 5 -- Empty path
-        (when (null (uri-path uri))
-          (setf (uri-path uri) (uri-path base))
-          (done))
-
-        ;; Step 6 -- Absolute path
-        (alexandria:when-let* ((p (uri-path uri))
-                               (first-char (and (> (length p) 0) (char p 0))))
-          (when (char= #\/ first-char)
-            (remove-dot-segments)
-            (done)))
-
-        ;; Step 7 -- Relative path
-        (setf (uri-path uri) (merge-uri-paths (uri-path uri) (uri-path base)))
-
-        ;; Step 8 -- Finish
-        (done)))))
+  (declare (uri reference base))
+  ;; Steps described at
+  ;; https://datatracker.ietf.org/doc/html/rfc2396#section-5.2
+  ;; Step 1 is absent since it's implicit
+  (let ((merged-uri (copy-uri reference)))
+    (flet ((return-merged-uri () (return-from merge-uris (uri merged-uri)))
+           (merge-paths () (setf (uri-path merged-uri)
+                                 (merge-uri-paths (uri-path merged-uri) nil))))
+      ;; Step 2
+      (when (uri-equal reference base)
+        (return-merged-uri))
+      ;; Step 3
+      (when (uri-scheme merged-uri)
+          (merge-paths)
+          (return-merged-uri))
+      (setf (uri-scheme merged-uri) (uri-scheme base))
+      ;; Step 4
+      (when (null (uri-port merged-uri))
+        (setf (uri-port merged-uri) (scheme-default-port (uri-scheme merged-uri))))
+      (when (uri-host merged-uri)
+        (merge-paths)
+        (return-merged-uri))
+      (setf (uri-userinfo merged-uri) (uri-userinfo base))
+      (setf (uri-host merged-uri) (uri-host base))
+      (setf (uri-port merged-uri) (uri-port base))
+      ;; Step 5
+      (when (null (uri-path merged-uri))
+        (setf (uri-path merged-uri) (uri-path base))
+        (return-merged-uri))
+      ;; Step 6
+      (alexandria:when-let* ((p (uri-path merged-uri))
+                             (first-char (and (> (length p) 0) (char p 0)))
+                             (_ (char= #\/ first-char)))
+        (merge-paths)
+        (return-merged-uri))
+      ;; Step 7
+      (setf (uri-path merged-uri)
+            (merge-uri-paths (uri-path merged-uri) (uri-path base)))
+      (return-merged-uri))))
