@@ -127,10 +127,14 @@
     (,(uri "https://example.org/#/?b") . "https://example.org/#/?b")
     (,(uri "about:blank") . "about:blank")))
 
-(subtest "merge-uris"
-  (loop for (test-uri . result-uri) in *merge-test-cases* do
-       (let ((merged-uri (merge-uris test-uri *base-uri*)))
-         (is (render-uri merged-uri) result-uri :test 'string=))))
+(loop for (test-uri . result-uri) in *merge-test-cases* do
+  (let ((merged-uri (merge-uris test-uri *base-uri*)))
+    (subtest "merge-uris"
+      (is (render-uri merged-uri) result-uri :test 'string=))
+    (subtest "merge-uris type checking"
+      (unless (uri-scheme test-uri)
+        (is (symbol-name (type-of merged-uri))
+            (symbol-name (type-of *base-uri*)))))))
 
 (subtest "render-uri"
   (is (let* ((*print-base* 2))
