@@ -371,6 +371,26 @@ Evaluation took:
 
 ## Change log
 
+### 0.5.0
+
+- URI schemes are now read-only.
+
+  This preserves the integrity of the structures (or else the scheme of a
+  `uri-http` could be set to FTP).
+  
+  `merge-uris` has been updated accordingly, so now the following returns the
+  right thing:
+
+  ```lisp
+  (merge-uris (uri "/") (uri "https://en.wikipedia.org/wiki/URL"))
+  ; => #<URI-HTTPS https://en.wikipedia.org/>
+  ```
+
+- Prevent some functions from being affected by *PRINT-BASE*.
+
+  Functions `make-uri` and `uri-authority` build strings from a number; they now
+  do so with the standard value for `*print-base*`.
+
 ### 0.4.0
 
 - Query values accept numbers again.
