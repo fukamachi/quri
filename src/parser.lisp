@@ -236,7 +236,7 @@
   (with-gensyms (args type form env)
     (flet ((intern-proper-case (a b)
              (intern (format nil "~:@(~a-~a~)" a b))))
-      (let ((fn-for-string (intern-proper-case name :string)) 
+      (let ((fn-for-string (intern-proper-case name :string))
             (fn-for-byte-vector (intern-proper-case name :byte-vector)))
         `(progn
            (defun ,name (,data &rest ,args &key ,start ,end)
@@ -244,7 +244,7 @@
              (etypecase ,data
                  (simple-string (apply ',(intern-proper-case name :string) data ,args))
                  (simple-byte-vector (apply ',(intern-proper-case name :byte-vector) data ,args))))
-  
+
            #+(or sbcl openmcl cmu allegro)
            (define-compiler-macro ,name (&whole ,form &environment ,env ,data &rest ,args)
              (declare (ignore ,args))
@@ -256,7 +256,7 @@
                  ((subtypep ,type 'simple-string) `(,',fn-for-string ,@(cdr ,form)))
                  ((subtypep ,type 'simple-byte-vector) `(,',fn-for-byte-vector ,@(cdr ,form)))
                  (t ,form))))
-  
+
            (defun ,fn-for-string (,data &key (,start 0) (,end (length ,data)) ,@other-args)
              (declare (type simple-string ,data)
                       (type fixnum ,start ,end)
@@ -273,7 +273,7 @@
                  (with-string-parsing (,char ,p ,data ,start ,end)
                    (declare (type fixnum ,p))
                    ,@body))))
-  
+
            (defun ,fn-for-byte-vector (,data &key (,start 0) (,end (length ,data)) ,@other-args)
              (declare (type simple-byte-vector ,data)
                       (type fixnum ,start ,end)
