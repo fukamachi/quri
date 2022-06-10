@@ -130,18 +130,16 @@
                :path path
                :query query
                :fragment fragment
-
                (and port
                     `(:port ,port))))))
 
-(defun copy-uri (uri &key
-                       (scheme (uri-scheme uri))
-                       (userinfo (uri-userinfo uri))
-                       (host (uri-host uri))
-                       (port (uri-port uri))
-                       (path (uri-path uri))
-                       (query (uri-query uri))
-                       (fragment (uri-fragment uri)))
+(defun copy-uri (uri &key (scheme (uri-scheme uri))
+                          (userinfo (uri-userinfo uri))
+                          (host (uri-host uri))
+                          (port (uri-port uri))
+                          (path (uri-path uri))
+                          (query (uri-query uri))
+                          (fragment (uri-fragment uri)))
   (make-uri :scheme scheme
             :userinfo userinfo
             :host host
@@ -223,7 +221,6 @@ See `uri='."
       (format stream "#<~S ~A>"
               (type-of uri)
               (render-uri uri))))
-
 
 (defun merge-uri-paths (ref-path base-path)
   (declare (type (or string null) ref-path base-path))
