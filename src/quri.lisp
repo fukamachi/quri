@@ -68,16 +68,21 @@
            :urn-nid
            :urn-nss
 
+           :make-uri-ftp
            :uri-ftp
            :uri-ftp-p
            :uri-ftp-typecode
 
+           :make-uri-http
+           :make-uri-https
            :uri-http
            :uri-http-p
            :uri-https
            :uri-https-p
            :uri-query-params
 
+           :make-uri-ldap
+           :make-uri-ldaps
            :uri-ldap
            :uri-ldap-p
            :uri-ldap-dn
@@ -86,6 +91,7 @@
            :uri-ldap-filter
            :uri-ldap-extensions
 
+           :make-uri-file
            :uri-file
            :uri-file-p
            :uri-file-pathname
