@@ -200,11 +200,18 @@
 (defun %uri= (uri1 uri2 &key normalize-path-p)
   (check-type uri1 uri)
   (check-type uri2 uri)
-  (when (eq (type-of uri1) (type-of uri2))
-    (and (equal  (or (uri-path uri1) (when normalize-path-p "/"))
-                 (or (uri-path uri2) (when normalize-path-p "/")))
-         (equal  (uri-query uri1)     (uri-query uri2))
-         (equal  (uri-fragment uri1)  (uri-fragment uri2))
+  (flet ((%path (path)
+           "Define path equivalence relations."
+           (cond (normalize-path-p
+                  (if (or (null path) (equal path ""))
+                      "/"
+                      path))
+                 (t
+                  (or path "")))))
+    (and (eq (type-of uri1) (type-of uri2))
+         (equal (%path (uri-path uri1)) (%path (uri-path uri2)))
+         (equal (uri-query uri1) (uri-query uri2))
+         (equal (uri-fragment uri1) (uri-fragment uri2))
          (equalp (uri-authority uri1) (uri-authority uri2))
          (or (not (uri-ftp-p uri1))
              (eql (uri-ftp-typecode uri1) (uri-ftp-typecode uri2))))))
