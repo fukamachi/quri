@@ -180,9 +180,11 @@
                (uri-fragment uri)))
       ((uri-file-p uri)
        (format stream
-               "~@[~(~A~)://~]~@[~A~]"
+               "~@[~(~A~)://~]~@[~A~]~@[?~A~]~@[#~A~]"
                (uri-scheme uri)
-               (uri-path uri)))
+               (uri-path uri)
+               (uri-query uri)
+               (uri-fragment uri)))
       (t
        (format stream
                "~@[~(~A~):~]~@[//~A~]~a~@[~A~]~@[?~A~]~@[#~A~]"
