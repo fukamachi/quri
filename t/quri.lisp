@@ -102,6 +102,14 @@
     (let ((uri (uri test-uri)))
       (is uri (copy-uri uri) :test #'uri=))))
 
+(defparameter *render-uri-inverse-test-cases*
+  '(("file:///tmp/junk.txt?query#fragment" .
+     ("file" nil nil "/tmp/junk.txt" "query" "fragment"))))
+
+(loop for (test-uri . params) in *render-uri-inverse-test-cases* do
+  (subtest (format nil "~A (render-uri after uri gives identity)" test-uri)
+    (is test-uri (render-uri (uri test-uri)))))
+
 #+nil
 (is-error (uri "//www.youtube.com/embed/”6j0LpmSdWg4”")
           'uri-malformed-string)
