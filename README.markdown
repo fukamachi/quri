@@ -371,6 +371,14 @@ Evaluation took:
 
 ## Change log
 
+### 0.6.0
+
+- All constructors like `make-uri-file` and `make-uri-https` exported.
+
+- `uri=` and `uri-equal` normalize the path so that NIL and "" are considered equal.
+
+- The `file` scheme renders the query and the fragment.
+
 ### 0.5.0
 
 - URI schemes are now read-only.
