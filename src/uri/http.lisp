@@ -29,7 +29,7 @@
 
 (defstruct (uri-https (:include uri-http (scheme "https") (port #.(scheme-default-port "https")))))
 
-(defun uri-query-params (http &key lenient)
+(defun uri-query-params (http &key (lenient t))
   (when-let (query (uri-query http))
     (url-decode-params query :lenient lenient)))
 
