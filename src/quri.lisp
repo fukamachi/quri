@@ -265,11 +265,13 @@ See `uri='."
   "Merge a reference URI into the base URI as described in RFC 2396 Section 5.2.
 The returned URI is always a new instance. Neither REFERENCE nor BASE is
 mutated."
-  (declare (uri reference base))
-  ;; Steps described at
-  ;; https://datatracker.ietf.org/doc/html/rfc2396#section-5.2
-  ;; Step 1 is absent since it's implicit
-  (let ((merged-uri (copy-uri reference)))
+  (let* ((reference (uri reference))
+         (base (uri base))
+         (merged-uri (copy-uri reference)))
+    (declare (uri reference base))
+    ;; Steps described at
+    ;; https://datatracker.ietf.org/doc/html/rfc2396#section-5.2
+    ;; Step 1 is absent since it's implicit
     (flet ((return-merged-uri () (return-from merge-uris (uri merged-uri)))
            (merge-paths () (setf (uri-path merged-uri)
                                  (merge-uri-paths (uri-path merged-uri) nil))))
@@ -278,8 +280,8 @@ mutated."
         (return-merged-uri))
       ;; Step 3
       (when (uri-scheme merged-uri)
-          (merge-paths)
-          (return-merged-uri))
+        (merge-paths)
+        (return-merged-uri))
       (setf merged-uri (copy-uri merged-uri :scheme (uri-scheme base)))
       ;; Step 4
       (when (null (uri-port merged-uri))
