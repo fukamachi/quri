@@ -8,6 +8,9 @@
 
 **QURI** (pronounced "Q-ree") is yet another URI library for Common Lisp. It is intended to be a replacement of [PURI](http://puri.b9.com).
 
+It aims at implementing [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986).
+Behaviour that deviates from it should be considered a bug; please report.
+
 ## Differences from PURI
 
 - Fast. (See [Benchmark](#benchmark).)
