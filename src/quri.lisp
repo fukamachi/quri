@@ -145,24 +145,34 @@
                           (port (uri-port uri))
                           (path (uri-path uri))
                           (query (uri-query uri))
-                          (fragment (uri-fragment uri)))
+                          (fragment (uri-fragment uri))
+                          render)
   (make-uri :scheme scheme
             :userinfo userinfo
             :host host
             :port port
             :path path
             :query query
-            :fragment fragment))
+            :fragment fragment
+            :render render))
 
-(defun make-uri (&rest initargs &key scheme userinfo host port path query fragment defaults)
+(defun make-uri (&rest initargs &key scheme userinfo host port path query fragment defaults render)
   (declare (ignore userinfo host port path fragment))
-  (setf initargs (delete-from-plist initargs :defaults))
-  (if defaults
-      (apply #'copy-uri (uri defaults) initargs)
-      (progn
-        (when (consp query)
-          (setf (getf initargs :query) (url-encode-params query)))
-        (apply (scheme-constructor scheme) initargs))))
+  (setf initargs (delete-from-plist initargs :defaults :render))
+  (let ((uri
+          (if defaults
+              (apply #'copy-uri (uri defaults) initargs)
+              (progn
+                (when (consp query)
+                  (setf (getf initargs :query) (url-encode-params query)))
+                (apply (scheme-constructor scheme) initargs)))))
+    (ctypecase render
+      (null
+       uri)
+      (boolean
+       (render-uri uri))
+      (stream
+       (render-uri uri render)))))
 
 (defun render-uri (uri &optional stream)
   (flet ((maybe-slash (authority path)
@@ -261,7 +271,7 @@ See `uri='."
               (when (or more ending-slash-p)
                 (write-char #\/ s)))))))
 
-(defun merge-uris (reference base)
+(defun merge-uris (reference base &key render)
   "Merge a reference URI into the base URI as described in RFC 2396 Section 5.2.
 The returned URI is always a new instance. Neither REFERENCE nor BASE is
 mutated."
@@ -272,7 +282,15 @@ mutated."
     ;; Steps described at
     ;; https://datatracker.ietf.org/doc/html/rfc2396#section-5.2
     ;; Step 1 is absent since it's implicit
-    (flet ((return-merged-uri () (return-from merge-uris (uri merged-uri)))
+    (flet ((return-merged-uri ()
+             (return-from merge-uris
+               (ctypecase render
+                 (null
+                  merged-uri)
+                 (boolean
+                  (render-uri merged-uri))
+                 (stream
+                  (render-uri merged-uri render)))))
            (merge-paths () (setf (uri-path merged-uri)
                                  (merge-uri-paths (uri-path merged-uri) nil))))
       ;; Step 2
