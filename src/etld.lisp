@@ -32,8 +32,10 @@
          finally (return (list normal-tlds wildcard-tlds special-tlds))))))
 
 (defvar *etlds*
-  #-abcl '#.(load-etld-data)
-  #+abcl (load-etld-data))
+  (or
+    #+(and ecl win32 msvc) (load-etld-data)
+    #+abcl (load-etld-data)
+    #-(or abcl (and ecl win32 msvc)) '#.(load-etld-data)))
 
 (defun next-subdomain (hostname &optional (start 0))
   (let ((pos (position #\. hostname :start start)))
