@@ -36,6 +36,9 @@
   (let ((uri (apply #'%make-uri args)))
     (unless (uri-port uri)
       (setf (uri-port uri) (scheme-default-port (uri-scheme uri))))
+    (when (pathnamep (uri-path uri))
+      (setf (uri-path uri)
+            (uiop:native-namestring (uri-path uri))))
     uri))
 
 (defun uri-authority (uri)
