@@ -374,6 +374,16 @@ Evaluation took:
 
 ## Change log
 
+### 0.7.0
+
+- Add `:lenient` option `uri-query-params` (default to `T`).
+
+- Fix `merge-uris` to accept strings as it did in 0.4.0.
+
+- Support MSVC on ECL.
+
+- Coerce URI `path` to strings.
+
 ### 0.6.0
 
 - All constructors like `make-uri-file` and `make-uri-https` exported.
