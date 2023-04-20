@@ -15,12 +15,11 @@
 (defstruct (uri-file (:include uri (scheme "file") (port nil))
                      (:constructor %make-uri-file)))
 
-(defun make-uri-file (&rest initargs)
-  (let ((uri (apply #'%make-uri-file initargs)))
-    (when (pathnamep (uri-path uri))
-      (setf (uri-path uri)
-            (uiop:native-namestring (uri-path uri))))
-    uri))
+(defun make-uri-file (&rest initargs &key path &allow-other-keys)
+  (when (pathnamep path)
+    (setf (getf initargs :path)
+          (uiop:native-namestring path)))
+  (apply #'%make-uri-file initargs))
 
 (declaim (ftype (function (uri-file) pathname) uri-file-pathname))
 (defun uri-file-pathname (file)
