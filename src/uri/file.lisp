@@ -12,7 +12,14 @@
            :uri-file-pathname))
 (in-package :quri.uri.file)
 
-(defstruct (uri-file (:include uri (scheme "file") (port nil))))
+(defstruct (uri-file (:include uri (scheme "file") (port nil))
+                     (:constructor %make-uri-file)))
+
+(defun make-uri-file (&rest initargs &key path &allow-other-keys)
+  (when (pathnamep path)
+    (setf (getf initargs :path)
+          (uiop:native-namestring path)))
+  (apply #'%make-uri-file initargs))
 
 (declaim (ftype (function (uri-file) pathname) uri-file-pathname))
 (defun uri-file-pathname (file)

@@ -173,4 +173,10 @@
         (render-uri (uri "//foo:80?a=5")))
       "//foo:80?a=5"))
 
+(subtest "coerce cl:pathname"
+  (is  (quri.uri:make-basic-uri :path "foo") (quri.uri:make-basic-uri :path #p"foo")
+       :test 'quri:uri=)
+  (is  (quri:make-uri-file :path "foo") (quri:make-uri-file :path #p"foo")
+       :test 'quri:uri=))
+
 (finalize)
