@@ -31,6 +31,9 @@
   query
   fragment)
 
+(defmethod make-load-form ((object uri) &optional environment)
+  (make-load-form-saving-slots object :environment environment))
+
 (defun make-basic-uri (&rest args &key scheme userinfo host port path query fragment)
   (declare (ignore scheme userinfo host port path query fragment))
   (let ((uri (apply #'%make-uri args)))
