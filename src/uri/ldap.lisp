@@ -11,8 +11,11 @@
                 :scheme-default-port)
   (:import-from :split-sequence
                 :split-sequence)
+  (:import-from #:closer-mop
+		#:defclass)
   (:import-from :alexandria
-                :when-let)
+                #:when-let
+		#:positive-integer)
   (:export :uri-ldap
            :make-uri-ldap
            :uri-ldap-p
@@ -28,9 +31,44 @@
            :uri-ldap-extensions))
 (in-package :quri.uri.ldap)
 
-(defstruct (uri-ldap (:include uri (scheme "ldap") (port #.(scheme-default-port "ldap")))))
+(defclass uri-ldap (uri)
+  ((scheme :initform "ldap"
+	   :initarg :scheme
+	   :accessor uri-ldap-scheme
+	   :type string)
+   (port :initform #.(scheme-default-port "ldap")
+	 :initarg :port
+	 :accessor uri-ldap-port
+	 :type positive-integer)))
 
-(defstruct (uri-ldaps (:include uri-ldap (scheme "ldaps") (port #.(scheme-default-port "ldaps")))))
+(declaim (ftype (function (&rest list &key (:scheme string) (:userinfo string)
+				 (:host string) (:port positive-integer) (:path (or string pathname))
+				 (:query string) (:fragment string)))
+		make-uri-ldap make-uri-ldaps))
+(defun make-uri-ldap (&rest initargs &key scheme userinfo host port path query fragment)
+  (declare (ignore scheme userinfo host port path query fragment))
+  (apply #'make-instance (cons 'uri-ldap initargs)))
+
+(declaim (ftype (function (t) boolean) uri-ldaps-p uri-ldap-p))
+(defun uri-ldap-p (uri)
+  (typep uri (find-class 'uri-ldap)))
+
+(defclass uri-ldaps (uri)
+  ((scheme :initform "ldaps"
+	   :initarg :scheme
+	   :accessor uri-ldaps-scheme
+	   :type string)
+   (port :initform #.(scheme-default-port "ldaps")
+	 :initarg :port
+	 :accessor uri-ldaps-port
+	 :type positive-integer)))
+
+(defun make-uri-ldaps (&rest initargs &key scheme userinfo host port path query fragment)
+  (declare (ignore scheme userinfo host port path query fragment))
+  (apply #'make-instance (cons 'uri-ldaps initargs)))
+
+(defun uri-ldaps-p (uri)
+  (typep uri (find-class 'uri-ldaps)))
 
 (defun uri-ldap-dn (ldap)
   (let ((path (uri-path ldap)))
