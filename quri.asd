@@ -7,6 +7,7 @@
                "alexandria"
                "split-sequence"
                "cl-utilities"
+	       "closer-mop"
                #+sbcl "sb-cltl2")
   :components ((:module "src"
                 :components
