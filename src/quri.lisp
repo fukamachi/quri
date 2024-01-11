@@ -145,23 +145,30 @@
                           (port (uri-port uri))
                           (path (uri-path uri))
                           (query (uri-query uri))
-                          (fragment (uri-fragment uri)))
+                          (fragment (uri-fragment uri))
+                          (query-encoding babel:*default-character-encoding*))
   (make-uri :scheme scheme
             :userinfo userinfo
             :host host
             :port port
             :path path
             :query query
-            :fragment fragment))
+            :fragment fragment
+            :query-encoding query-encoding))
 
-(defun make-uri (&rest initargs &key scheme userinfo host port path query fragment defaults)
+(defun make-uri (&rest initargs &key scheme userinfo host port path query fragment defaults query-encoding)
   (declare (ignore userinfo host port path fragment))
   (setf initargs (delete-from-plist initargs :defaults))
   (if defaults
       (apply #'copy-uri (uri defaults) initargs)
       (progn
+        ;; Don't delete before copying the URI, otherwise it'll be lost.
+        (setf initargs (delete-from-plist initargs :query-encoding))
         (when (consp query)
-          (setf (getf initargs :query) (url-encode-params query)))
+          (setf (getf initargs :query)
+                (url-encode-params
+                 query
+                 :encoding (or query-encoding babel-encodings:*default-character-encoding*))))
         (apply (scheme-constructor scheme) initargs))))
 
 (defun render-uri (uri &optional stream)
