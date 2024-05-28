@@ -15,6 +15,14 @@
     '(("a" . "b") ("c" . "d") ("e"))
     "field only")
 
+(is (url-decode-params "alpha=%D0%B0%D0%B1%D0%B2")
+    '(("alpha" . "абв"))
+    "percent decode")
+
+(is (url-decode-params "alpha=%D0%B0%D0%B1%D0%B2" :percent-decode nil)
+    '(("alpha" . "%D0%B0%D0%B1%D0%B2"))
+    "no percent decode")
+
 (is-error (url-decode-params "a=b=c")
           'quri:uri-malformed-urlencoded-string
           "Raise a malformed error")

@@ -91,7 +91,8 @@
                                  (encoding babel-encodings:*default-character-encoding*)
                                  (start 0)
                                  end
-                                 (lenient nil))
+                                 (lenient nil)
+                                 (percent-decode t))
   (declare (type (or string simple-byte-vector) data)
            (type integer start)
            (type character delimiter)
@@ -101,37 +102,39 @@
         (=-mark nil))
     (declare (type integer end))
     (collecting
-      (flet ((collect-pair (p)
-               (tagbody
-                  (handler-bind ((url-decoding-error
-                                   (lambda (error)
-                                     (declare (ignore error))
-                                     (when lenient
-                                       (go continue)))))
-                    (collect
-                        (cons (url-decode data :encoding encoding
-                                               :start start-mark :end =-mark
-                                               :lenient lenient)
-                              (url-decode data :encoding encoding
-                                               :start (1+ =-mark) :end p
-                                               :lenient lenient))))
-                continue)
-               (setq start-mark nil
-                     =-mark nil))
-             (collect-field (p)
-               (tagbody
-                  (handler-bind ((url-decoding-error
-                                   (lambda (error)
-                                     (declare (ignore error))
-                                     (when lenient
-                                       (go continue)))))
-                    (collect
-                        (cons (url-decode data :encoding encoding
-                                               :start start-mark :end p
-                                               :lenient lenient)
-                              nil)))
-                continue)
-               (setq start-mark nil)))
+      (labels ((maybe-decode (string encoding start end)
+                 (if percent-decode
+                     (url-decode string
+                                 :encoding encoding
+                                 :start start
+                                 :end end
+                                 :lenient lenient)
+                     (subseq string start end)))
+               (collect-pair (p)
+                 (tagbody
+                    (handler-bind ((url-decoding-error
+                                    (lambda (error)
+                                      (declare (ignore error))
+                                      (when lenient
+                                        (go continue)))))
+                      (collect
+                          (cons (maybe-decode data encoding start-mark =-mark)
+                                (maybe-decode data encoding (1+ =-mark) p))))
+                  continue)
+                 (setq start-mark nil
+                       =-mark nil))
+               (collect-field (p)
+                 (tagbody
+                    (handler-bind ((url-decoding-error
+                                    (lambda (error)
+                                      (declare (ignore error))
+                                      (when lenient
+                                        (go continue)))))
+                      (collect
+                          (cons (maybe-decode data encoding start-mark p)
+                                nil)))
+                  continue)
+                 (setq start-mark nil)))
         (with-array-parsing (char p data start end (and (not (stringp data))
                                                         #'code-char))
           (start

@@ -26,6 +26,10 @@
       "a=b&c=1")
   (is (let ((*print-base* 2))
         (url-encode-params '(("a" . 5))))
-      "a=5"))
+      "a=5")
+  (is (url-encode-params '(("alpha" . "абв")))
+      "alpha=%D0%B0%D0%B1%D0%B2")
+  (is (url-encode-params '(("alpha" . "абв")) :percent-encode nil)
+      "alpha=абв"))
 
 (finalize)

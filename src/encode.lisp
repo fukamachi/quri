@@ -88,22 +88,30 @@
     (setf (fill-pointer res) i)
     res))
 
-(defun url-encode-params (params-alist &key (encoding babel-encodings:*default-character-encoding*)
-                                         space-to-plus)
+(defun url-encode-params (params-alist
+                          &key
+                            (encoding babel-encodings:*default-character-encoding*)
+                            space-to-plus
+                            (percent-encode t))
   (declare (optimize (speed 3)))
   (check-type params-alist list)
-  (with-output-to-string (s)
-    (loop for ((field . value) . rest) on params-alist do
-      (write-string (url-encode field :encoding encoding :space-to-plus space-to-plus) s)
-      (when value
-        (write-char #\= s)
-        (check-type value (or string number simple-byte-vector))
-        (write-string (url-encode (if (numberp value)
-                                      (with-standard-io-syntax
-                                        (write-to-string value))
-                                      value)
-                                  :encoding encoding
-                                  :space-to-plus space-to-plus)
-                      s))
-      (when rest
-        (write-char #\& s)))))
+  (flet ((maybe-encode (string)
+           (if percent-encode
+               (url-encode string
+                           :encoding encoding
+                           :space-to-plus space-to-plus)
+               string)))
+    (with-output-to-string (s)
+      (loop for ((field . value) . rest) on params-alist do
+            (write-string (maybe-encode field) s)
+            (when value
+              (write-char #\= s)
+              (check-type value (or string number simple-byte-vector))
+              (write-string (maybe-encode
+                             (if (numberp value)
+                                 (with-standard-io-syntax
+                                   (write-to-string value))
+                                 value))
+                            s))
+            (when rest
+              (write-char #\& s))))))
