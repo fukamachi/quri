@@ -6,20 +6,37 @@
                 :scheme
                 :port
                 :uri-path)
+  (:import-from #:alexandria
+		#:positive-integer)
+  (:import-from #:closer-mop
+		#:defclass)
   (:export :uri-file
            :uri-file-p
            :make-uri-file
            :uri-file-pathname))
 (in-package :quri.uri.file)
 
-(defstruct (uri-file (:include uri (scheme "file") (port nil))
-                     (:constructor %make-uri-file)))
+(defclass uri-file (uri)
+  ((scheme :initform "file"
+	   :initarg :scheme
+	   :accessor uri-file-scheme
+	   :type string)))
 
-(defun make-uri-file (&rest initargs &key path &allow-other-keys)
-  (when (pathnamep path)
-    (setf (getf initargs :path)
-          (uiop:native-namestring path)))
-  (apply #'%make-uri-file initargs))
+(declaim (ftype (function (&rest t &key (:scheme string) (:userinfo string)
+				 (:host string) (:port positive-integer) (:path (or string pathname))
+				 (:query string) (:fragment string)))
+		make-uri-file))
+(defun make-uri-file (&rest initargs &key scheme userinfo host port path query fragment)
+  (declare (ignore scheme userinfo host port query fragment))
+  (let ((file-uri (apply #'make-instance (cons 'uri-file initargs))))
+    (when (pathnamep path)
+      (setf (uri-path file-uri)
+	    (uiop:native-namestring path)))
+    file-uri))
+
+(declaim (ftype (function (t) boolean) uri-file-p))
+(defun uri-file-p (uri)
+  (typep uri (find-class 'uri-file)))
 
 (declaim (ftype (function (uri-file) pathname) uri-file-pathname))
 (defun uri-file-pathname (file)
