@@ -228,7 +228,7 @@ Paths are not normalized. See `uri-equal'."
 Empty paths are normalized to '/' as per RFC 3986
 (https://tools.ietf.org/html/rfc3986#section-6.2.3).
 See `uri='."
-  (%uri= uri1 uri2  :normalize-path-p t))
+  (%uri= uri1 uri2 :normalize-path-p t))
 
 (defmethod print-object ((uri uri) stream)
   (if (and (null *print-readably*) (null *print-escape*))
