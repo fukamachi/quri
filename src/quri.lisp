@@ -210,7 +210,7 @@
                       path))
                  (t
                   (or path "")))))
-    (and (eq (type-of uri1) (type-of uri2))
+    (and (equal (uri-scheme uri1) (uri-scheme uri2))
          (equal (%path (uri-path uri1)) (%path (uri-path uri2)))
          (equal (uri-query uri1) (uri-query uri2))
          (equal (uri-fragment uri1) (uri-fragment uri2))
