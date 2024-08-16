@@ -411,8 +411,7 @@
           (char=* char #\#))
       (go :eof))
      ((let ((code (char-code* char)))
-        (or (<= 128 code)
-            (= (aref +uri-char+ code) 1)))
+        (and (<= 0 code 127) (= (aref +uri-char+ code) 1)))
       (redo))
      (t (error 'uri-malformed-string
                :data data :position p))))
