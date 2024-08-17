@@ -7,6 +7,7 @@
                "alexandria"
                "split-sequence"
                "cl-utilities"
+               "idna"
                #+sbcl "sb-cltl2")
   :components ((:module "src"
                 :components

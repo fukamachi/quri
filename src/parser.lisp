@@ -122,14 +122,16 @@
           (locally (declare (type fixnum end))
             (unless (= end parse-end)
               (multiple-value-bind (parsed-data userinfo-start userinfo-end
-                                    host-start host-end port-start port-end)
+                                    host-start host-end port-start port-end non-ascii)
                   (parse-authority-string data :start end :end parse-end)
                 (when parsed-data
                   (locally (declare (type fixnum host-start host-end))
                     (when userinfo-start
                       (setq userinfo (subseq (the string data) (the fixnum userinfo-start) (the fixnum userinfo-end))))
                     (unless (= host-start host-end)
-                      (setq host (subseq data host-start host-end)))
+                      (setq host (subseq data host-start host-end))
+                      (when non-ascii
+                        (setq host (idna:to-ascii host))))
                     (cond
                       (port-start
                        (locally (declare (type fixnum port-start port-end))
@@ -213,7 +215,7 @@
             (locally (declare (type fixnum end))
               (unless (= end parse-end)
                 (multiple-value-bind (parsed-data userinfo-start userinfo-end
-                                      host-start host-end port-start port-end)
+                                      host-start host-end port-start port-end non-ascii)
                     (parse-authority-byte-vector data :start end :end parse-end)
                   (when parsed-data
                     (locally (declare (type simple-byte-vector data)
@@ -221,7 +223,9 @@
                       (when userinfo-start
                         (setq userinfo (subseq* data (the fixnum userinfo-start) (the fixnum userinfo-end))))
                       (unless (= host-start host-end)
-                        (setq host (subseq* data host-start host-end)))
+                        (setq host (subseq* data host-start host-end))
+                        (when non-ascii
+                          (setq host (idna:to-ascii host))))
                       (cond
                         (port-start
                          (setq port
@@ -371,19 +375,20 @@
                                                 host-start
                                                 host-end
                                                 port-start
-                                                port-end)
+                                                port-end
+                                                non-ascii)
   (parsing-first
    (cond
      ((char=* char #\/)
       (gonext))
      (t
       (return-from parse-authority
-        (values data nil nil start start nil nil)))))
+        (values data nil nil start start nil nil non-ascii)))))
 
   (parsing-authority-starting
    (unless (char=* char #\/)
      (return-from parse-authority
-        (values data nil nil start start nil nil)))
+        (values data nil nil start start nil nil non-ascii)))
    (setq authority-mark (1+ p))
    (gonext))
 
@@ -413,6 +418,9 @@
      ((let ((code (char-code* char)))
         (and (<= 0 code 127) (= (aref +uri-char+ code) 1)))
       (redo))
+     ((< 127 (char-code* char))
+      (setq non-ascii t)
+      (redo))
      (t (error 'uri-malformed-string
                :data data :position p))))
 
@@ -427,7 +435,7 @@
        (values data
                nil nil
                start start
-               nil nil)))
+               nil nil non-ascii)))
    (if colon-mark
        (setq host-start authority-mark
              host-end colon-mark
@@ -439,7 +447,7 @@
      (values data
              userinfo-start userinfo-end
              host-start host-end
-             port-start port-end))))
+             port-start port-end non-ascii))))
 
 (defun path-char-p (char)
   (declare (type character char)
