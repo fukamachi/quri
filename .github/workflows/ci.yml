@@ -22,4 +22,5 @@ jobs:
       - name: Run tests
         run: |
           PATH="~/.roswell/bin:$PATH"
+          ros -s quri-test
           run-prove quri-test.asd
