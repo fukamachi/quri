@@ -135,13 +135,12 @@
     (let ((uri (uri test-uri)))
       (is uri (copy-uri uri) :test #'uri=))))
 
-(defparameter *render-uri-inverse-test-cases*
-  '(("file:///tmp/junk.txt?query#fragment" .
-     ("file" nil nil "/tmp/junk.txt" "query" "fragment"))))
-
-(loop for (test-uri . params) in *render-uri-inverse-test-cases* do
-  (subtest (format nil "~A (render-uri after uri gives identity)" test-uri)
-    (is test-uri (render-uri (uri test-uri)))))
+;; May not be true in general, e.g.:
+;; (render-uri (uri "///")) -> "/"
+;; (render-uri (uri "http://")) -> "http:"
+(subtest "render-uri after uri is the identity function"
+  (let ((url "file:///tmp/junk.txt?query#fragment"))
+    (is url (render-uri (uri url)))))
 
 #+nil
 (is-error (uri "//www.youtube.com/embed/”6j0LpmSdWg4”")
