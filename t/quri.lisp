@@ -34,7 +34,11 @@
       "coerce cl:pathname")
   (is (make-uri-file :path "foo")
       (make-uri-file :path #p"foo")
-      "coerce cl:pathname"))
+      "coerce cl:pathname")
+  (isnt (uri "https://google.com")
+        ;; The "o" character is replaced by cyrillic small letter O.
+        (uri "https://gооgle.com")
+        "Prevent IDN homograph attack."))
 
 (subtest "uri="
   (let ((prove:*default-test-function* #'uri=))
@@ -175,6 +179,5 @@
       (unless (uri-scheme test-uri)
         (is (symbol-name (type-of merged-uri))
             (symbol-name (type-of *base-uri*)))))))
-
 
 (finalize)
