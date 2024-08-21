@@ -1,7 +1,7 @@
 (in-package :cl-user)
 (defpackage quri-test
   (:use :cl
-        :quri
+        :quri :quri.uri
         :prove))
 (in-package :quri-test)
 
@@ -28,7 +28,13 @@
         "Differ by fragment.")
   (is (make-uri :scheme "http" :host "b.hatena.ne.jp")
       (make-uri :scheme "http" :host "b.hatena.ne.jp" :path "")
-      "The NIL and empty string path are equivalent."))
+      "The NIL and empty string path are equivalent.")
+  (is (make-basic-uri :path "foo")
+      (make-basic-uri :path #p"foo")
+      "coerce cl:pathname")
+  (is (make-uri-file :path "foo")
+      (make-uri-file :path #p"foo")
+      "coerce cl:pathname"))
 
 (subtest "uri="
   (let ((prove:*default-test-function* #'uri=))
@@ -176,10 +182,5 @@
         (render-uri (uri "//foo:80?a=5")))
       "//foo:80?a=5"))
 
-(subtest "coerce cl:pathname"
-  (is  (quri.uri:make-basic-uri :path "foo") (quri.uri:make-basic-uri :path #p"foo")
-       :test 'quri:uri=)
-  (is  (quri:make-uri-file :path "foo") (quri:make-uri-file :path #p"foo")
-       :test 'quri:uri=))
 
 (finalize)
