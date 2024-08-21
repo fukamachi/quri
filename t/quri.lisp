@@ -146,10 +146,6 @@
          (url "//foo:80?a=5"))
     (is url (render-uri (uri url)))))
 
-#+nil
-(is-error (uri "//www.youtube.com/embed/”6j0LpmSdWg4”")
-          'uri-malformed-string)
-
 (defparameter *base-uri* (uri "http://www.example.com/path/a/b.html"))
 
 (defparameter *merge-test-cases*
