@@ -140,6 +140,10 @@
 ;; (render-uri (uri "http://")) -> "http:"
 (subtest "render-uri after uri is the identity function"
   (let ((url "file:///tmp/junk.txt?query#fragment"))
+    (is url (render-uri (uri url))))
+  ;; Ensure it doesn't depend on *print-base*.
+  (let* ((*print-base* 2)
+         (url "//foo:80?a=5"))
     (is url (render-uri (uri url)))))
 
 #+nil
@@ -175,11 +179,6 @@
       (unless (uri-scheme test-uri)
         (is (symbol-name (type-of merged-uri))
             (symbol-name (type-of *base-uri*)))))))
-
-(subtest "render-uri"
-  (is (let* ((*print-base* 2))
-        (render-uri (uri "//foo:80?a=5")))
-      "//foo:80?a=5"))
 
 
 (finalize)
