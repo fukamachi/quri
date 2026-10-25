@@ -239,7 +239,9 @@
 (defmacro defun-with-array-parsing (name (char p data start end &rest other-args) &body body)
   (with-gensyms (args type form env)
     (flet ((intern-proper-case (a b)
-             (intern (format nil "~:@(~a-~a~)" a b))))
+             ;; STRING keeps each part's case as the reader made it, so
+             ;; the helper names match the reader's in every case mode.
+             (intern (concatenate 'string (string a) "-" (string b)))))
       (let ((fn-for-string (intern-proper-case name :string))
             (fn-for-byte-vector (intern-proper-case name :byte-vector)))
         `(progn
