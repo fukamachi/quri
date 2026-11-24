@@ -410,7 +410,7 @@
             userinfo-end p)
       (setq authority-mark (1+ p)
             colon-mark nil)
-      (redo))
+      (goto parsing-authority-start))
      ((or (char=* char #\/)
           (char=* char #\?)
           (char=* char #\#))

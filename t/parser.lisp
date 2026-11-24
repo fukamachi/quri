@@ -17,4 +17,12 @@
   (is (nth-value 6 (parse-uri "foo://bar/xyz?a=b#c")) "c")
   (is (nth-value 6 (parse-uri "foo://bar/xyz?a=b#c" :end 17)) nil))
 
+(subtest "userinfo before an IP literal"
+  (is (nth-value 2 (parse-uri "redis://:pw@[::1]:6379/2")) "[::1]")
+  (is (nth-value 3 (parse-uri "redis://:pw@[::1]:6379/2")) 6379)
+  (is (nth-value 3 (parse-uri "http://user@[2001:db8::7]/x")) 80)
+  (is-error (parse-uri "redis://:pw@host[::1]/") 'quri:uri-malformed-string)
+  (is-error (parse-uri "redis://a@b@[::1]:6379/") 'quri:uri-malformed-string)
+  (is-error (parse-uri "redis://:pw@[::1]@host/") 'quri:uri-malformed-string))
+
 (finalize)
