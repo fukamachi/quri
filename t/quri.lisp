@@ -97,6 +97,12 @@
      ("ldap" nil "[2001:db8::7]" "/c=GB" "objectClass?one" nil))
     ("http://[dead:beef::]:/foo/" .
      ("http" nil "[dead:beef::]" "/foo/" nil nil))
+    ("http://user@[2001:db8::7]:8080/x?q#f" .
+     ("http" "user" "[2001:db8::7]" "/x" "q" "f"))
+    ("redis://:pw@[::1]:6379/2" .
+     ("redis" ":pw" "[::1]" "/2" nil nil))
+    ("amqp://app:pw@[::1]:5672/%2F" .
+     ("amqp" "app:pw" "[::1]" "/%2F" nil nil))
     ("tel:+31-641044153" .
      ("tel" nil nil "+31-641044153" nil nil))
     ("http://" .
